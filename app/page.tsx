@@ -1,9 +1,10 @@
 "use client";
 import { useState, useEffect } from "react";
-import { useQuickAuth,useMiniKit } from "@coinbase/onchainkit/minikit";
+import { useQuickAuth, useMiniKit } from "@coinbase/onchainkit/minikit";
 import { useRouter } from "next/navigation";
 import { minikitConfig } from "../minikit.config";
 import styles from "./page.module.css";
+import { LogOut, Wallet } from "lucide-react";
 
 interface AuthResponse {
   success: boolean;
@@ -18,7 +19,6 @@ interface AuthResponse {
 
 export default function Home() {
   const { isFrameReady, setFrameReady, context } = useMiniKit();
-  const [email, setEmail] = useState("");
   const [error, setError] = useState("");
   const router = useRouter();
 
@@ -28,8 +28,8 @@ export default function Home() {
       setFrameReady();
     }
   }, [setFrameReady, isFrameReady]);
- 
-  
+
+
 
   // If you need to verify the user's identity, you can use the useQuickAuth hook.
   // This hook will verify the user's signature and return the user's FID. You can update
@@ -45,74 +45,57 @@ export default function Home() {
     { method: "GET" }
   );
 
-  const validateEmail = (email: string) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
+  const handleLogout = () => {
+    console.log("Logout");
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleConnectWallet = () => {
     setError("");
 
     // Check authentication first
-    if (isAuthLoading) {
-      setError("Please wait while we verify your identity...");
-      return;
-    }
+    // if (isAuthLoading) {
+    //   setError("Please wait while we verify your identity...");
+    //   return;
+    // }
 
-    if (authError || !authData?.success) {
-      setError("Please authenticate to join the waitlist");
-      return;
-    }
+    // if (authError || !authData?.success) {
+    //   setError("Please authenticate to join the waitlist");
+    //   return;
+    // }
 
-    if (!email) {
-      setError("Please enter your email address");
-      return;
-    }
 
-    if (!validateEmail(email)) {
-      setError("Please enter a valid email address");
-      return;
-    }
-
-    // TODO: Save email to database/API with user FID
-    console.log("Valid email submitted:", email);
-    console.log("User authenticated:", authData.user);
-    
-    // Navigate to success page
-    router.push("/success");
+    router.push("/onboard");
   };
 
   return (
     <div className={styles.container}>
-      <button className={styles.closeButton} type="button">
-        ✕
-      </button>
-      
+      <div className="flex justify-end py-4 px-4">
+        <div className="badge badge-outline badge-md flex text-center items-center gap-2">
+          <Wallet className="w-4 h-4 text-green-500" />
+          {context?.user?.displayName || "test"}
+          <LogOut className="w-4 h-4 cursor-pointer" onClick={handleLogout} />
+        </div>
+      </div>
       <div className={styles.content}>
-        <div className={styles.waitlistForm}>
-          <h1 className={styles.title}>Join {minikitConfig.miniapp.name.toUpperCase()}</h1>
-          
-          <p className={styles.subtitle}>
-             Hey {context?.user?.displayName || "there"}, Get early access and be the first to experience the future of<br />
-            crypto marketing strategy.
-          </p>
-
-          <form onSubmit={handleSubmit} className={styles.form}>
-            <input
-              type="email"
-              placeholder="Your amazing email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className={styles.emailInput}
-            />
-            
+        <div className="card card-xl w-96 bg-base-100 shadow-sm">
+          <div className="card-body items-center text-center">
+            <h2 className="card-title">{minikitConfig.miniapp.name.toUpperCase()}</h2>
+            <div className="badge badge-outline badge-md flex text-center items-center gap-2">
+              <Wallet className="w-4 h-4 text-green-500" />
+              {context?.user?.displayName || "test"}
+            </div>
+            <div className="text-center">
+              여기에 설명 넣기
+            </div>
+            <div className="card-actions">
+              <button
+                type="button"
+                onClick={handleConnectWallet}
+                className="btn btn-primary mt-4">Connect Wallet</button>
+            </div>
             {error && <p className={styles.error}>{error}</p>}
-            
-            <button type="submit" className={styles.joinButton}>
-              JOIN WAITLIST
-            </button>
-          </form>
+            <p className={styles.error}>여기에 에러표시</p>
+          </div>
         </div>
       </div>
     </div>
