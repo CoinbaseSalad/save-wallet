@@ -3,13 +3,13 @@
 import Header from "@/app/components/Header";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Wallet, Search, User } from "lucide-react";
+import { Home, Wallet, Search, Settings } from "lucide-react";
 
 const navItems = [
   { href: "/home", label: "Home", icon: Home },
   { href: "/asset", label: "Asset", icon: Wallet },
   { href: "/search", label: "Search", icon: Search },
-  { href: "/user", label: "User", icon: User },
+  { href: "/setting", label: "Setting", icon: Settings },
 ];
 
 export default function MainLayout({
@@ -27,23 +27,25 @@ export default function MainLayout({
         {children}
       </main>
 
-      {/* Bottom Tab Navigation */}
-      <div className="dock dock-md">
-        {navItems.map((item) => {
-          const isActive = pathname === item.href;
-          const Icon = item.icon;
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={isActive ? "dock-active" : ""}
-            >
-              <Icon className="size-[1.2em]" />
-              <span className="dock-label">{item.label}</span>
-            </Link>
-          );
-        })}
-      </div>
+      {/* Bottom Tab Navigation - onboard 페이지에서는 숨김 */}
+      {pathname !== "/onboard" && (
+        <div className="dock dock-md">
+          {navItems.map((item) => {
+            const isActive = pathname === item.href;
+            const Icon = item.icon;
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={isActive ? "dock-active" : ""}
+              >
+                <Icon className="size-[1.2em]" />
+                <span className="dock-label">{item.label}</span>
+              </Link>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
