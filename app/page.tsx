@@ -4,6 +4,7 @@ import { useQuickAuth, useMiniKit } from "@coinbase/onchainkit/minikit";
 import { useRouter } from "next/navigation";
 import { useConnectModal } from "@rainbow-me/rainbowkit";
 import { useAccount } from "wagmi";
+import { useUserSettings } from "@/app/hooks/useUserSettings";
 import { minikitConfig } from "../minikit.config";
 import styles from "./page.module.css";
 import { LogOut, Wallet } from "lucide-react";
@@ -23,27 +24,32 @@ export default function Home() {
   const { isFrameReady, setFrameReady, context } = useMiniKit();
   const [error, setError] = useState("");
   const router = useRouter();
-
-  // RainbowKit hooks
   const { openConnectModal } = useConnectModal();
   const { isConnected } = useAccount();
 
-  // Base 앱 환경인지 확인 (context가 있으면 Base 앱)
+  // useUserSettings 훅 사용
+  const { hasCompletedOnboarding, isLoading } = useUserSettings();
+
   const isBaseApp = !!context;
 
-  // Initialize the  miniapp
+
   useEffect(() => {
     if (!isFrameReady) {
       setFrameReady();
     }
   }, [setFrameReady, isFrameReady]);
 
-  // 지갑이 연결되면 onboard 페이지로 이동
+  // 지갑 연결 후 자동 리다이렉트
   useEffect(() => {
-    if (isConnected && !isBaseApp) {
-      router.push("/onboard");
+    if (isConnected && !isLoading) {
+      // 온보딩 완료 여부에 따라 분기
+      if (hasCompletedOnboarding()) {
+        router.push("/home");
+      } else {
+        router.push("/onboard");
+      }
     }
-  }, [isConnected, isBaseApp, router]);
+  }, [isConnected, isLoading, hasCompletedOnboarding, router]);
 
   // If you need to verify the user's identity, you can use the useQuickAuth hook.
   // This hook will verify the user's signature and return the user's FID. You can update

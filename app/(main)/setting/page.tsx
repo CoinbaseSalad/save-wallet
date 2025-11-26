@@ -1,54 +1,119 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Settings, Save, RotateCcw, LogOut, AlertTriangle } from "lucide-react";
-import { DEFAULT_SETTINGS } from "@/app/constants/settings";
+import { Settings, Save, RotateCcw, LogOut, AlertTriangle, CheckCircle, XCircle } from "lucide-react";
+import { useUserSettings } from "@/app/hooks/useUserSettings";
+import { useDisconnect } from "wagmi";
 import InvestmentStyleSlider from "@/app/components/InvestmentStyleSlider";
 import SalaryAllocationSlider from "@/app/components/SalaryAllocationSlider";
 import RoastLevelSlider from "@/app/components/RoastLevelSlider";
 
+// Toast 타입 정의
+type ToastType = 'success' | 'error' | 'warning' | 'info';
+
+interface Toast {
+  message: string;
+  type: ToastType;
+}
+
 export default function SettingPage() {
   const router = useRouter();
   const resetModalRef = useRef<HTMLDialogElement>(null);
+  const { disconnect } = useDisconnect();
 
-  // 저장된 설정값 불러오기 (실제로는 localStorage/API에서)
-  const [investmentStyle, setInvestmentStyle] = useState(DEFAULT_SETTINGS.investmentStyle);
-  const [livingExpenseRatio, setLivingExpenseRatio] = useState(DEFAULT_SETTINGS.livingExpenseRatio);
-  const [investmentRatio, setInvestmentRatio] = useState(DEFAULT_SETTINGS.investmentRatio);
-  const [roastLevel, setRoastLevel] = useState(DEFAULT_SETTINGS.roastLevel);
+  // useUserSettings 훅 사용
+  const { settings, saveSettings, resetSettings, isLoading } = useUserSettings();
+
+  // 로컬 상태
+  const [investmentStyle, setInvestmentStyle] = useState(2);
+  const [livingExpenseRatio, setLivingExpenseRatio] = useState(60);
+  const [investmentRatio, setInvestmentRatio] = useState(30);
+  const [roastLevel, setRoastLevel] = useState(2);
   const [isSaving, setIsSaving] = useState(false);
   const [isResetting, setIsResetting] = useState(false);
-  const [showSaveSuccess, setShowSaveSuccess] = useState(false);
+
+  // Toast 상태
+  const [toast, setToast] = useState<Toast | null>(null);
+
+  // Toast 표시 함수
+  const showToast = (message: string, type: ToastType = 'success', duration = 3000) => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), duration);
+  };
+
+  // LocalStorage에서 불러온 데이터로 상태 동기화
+  useEffect(() => {
+    if (settings) {
+      setInvestmentStyle(settings.investment_style);
+      setLivingExpenseRatio(settings.living_expense_ratio);
+      setInvestmentRatio(settings.investment_ratio);
+      setRoastLevel(settings.roast_level);
+    }
+  }, [settings]);
 
   // 변경 여부 확인
-  const hasChanges =
-    investmentStyle !== DEFAULT_SETTINGS.investmentStyle ||
-    livingExpenseRatio !== DEFAULT_SETTINGS.livingExpenseRatio ||
-    investmentRatio !== DEFAULT_SETTINGS.investmentRatio ||
-    roastLevel !== DEFAULT_SETTINGS.roastLevel;
+  const hasChanges = settings && (
+    investmentStyle !== settings.investment_style ||
+    livingExpenseRatio !== settings.living_expense_ratio ||
+    investmentRatio !== settings.investment_ratio ||
+    roastLevel !== settings.roast_level
+  );
 
   // 저장 핸들러
   const handleSave = async () => {
     setIsSaving(true);
-    // 실제로는 API 호출하여 데이터 저장
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+
+    const success = saveSettings({
+      investment_style: investmentStyle,
+      living_expense_ratio: livingExpenseRatio,
+      investment_ratio: investmentRatio,
+      roast_level: roastLevel,
+    });
+
     setIsSaving(false);
-    setShowSaveSuccess(true);
-    setTimeout(() => setShowSaveSuccess(false), 3000);
+    if (success) {
+      showToast('설정이 저장되었습니다!', 'success');
+    } else {
+      showToast('설정 저장에 실패했습니다.', 'error');
+    }
   };
 
   // 초기화 및 로그아웃 핸들러
   const handleReset = async () => {
     setIsResetting(true);
-    // 실제로는 API 호출하여 데이터 초기화 및 로그아웃
-    await new Promise((resolve) => setTimeout(resolve, 1500));
+    resetSettings();
+    disconnect();
     resetModalRef.current?.close();
     router.push("/");
   };
 
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <span className="loading loading-spinner loading-lg"></span>
+      </div>
+    );
+  }
+
   return (
     <div className="p-4 space-y-6 max-w-lg mx-auto">
+      {/* Toast 컴포넌트 - 상단 중앙 */}
+      {toast && (
+        <div className="toast toast-top toast-center z-50">
+          <div className={`alert ${toast.type === 'success' ? 'alert-success' :
+              toast.type === 'error' ? 'alert-error' :
+                toast.type === 'warning' ? 'alert-warning' :
+                  'alert-info'
+            }`}>
+            {toast.type === 'success' && <CheckCircle className="w-5 h-5" />}
+            {toast.type === 'error' && <XCircle className="w-5 h-5" />}
+            {toast.type === 'warning' && <AlertTriangle className="w-5 h-5" />}
+            <span>{toast.message}</span>
+          </div>
+        </div>
+      )}
+
       {/* 헤더 */}
       <div className="text-center py-4">
         <h1 className="text-2xl font-bold flex items-center justify-center gap-2">
@@ -59,16 +124,6 @@ export default function SettingPage() {
           투자 평가에 사용되는 설정을 변경할 수 있습니다
         </p>
       </div>
-
-      {/* 저장 성공 알림 */}
-      {showSaveSuccess && (
-        <div className="alert alert-success">
-          <svg xmlns="http://www.w3.org/2000/svg" className="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
-          <span>설정이 저장되었습니다!</span>
-        </div>
-      )}
 
       {/* 투자 성향 영역 */}
       <InvestmentStyleSlider
@@ -122,7 +177,7 @@ export default function SettingPage() {
             계정 초기화
           </h3>
           <p className="text-sm text-base-content/70">
-            모든 설정과 데이터를 초기화하고 로그아웃합니다. 이 작업은 되돌릴 수 없습니다.
+            모든 설정과 데이터를 초기화하고 로그아웃합니다.
           </p>
           <div className="card-actions justify-end mt-2">
             <button
@@ -144,9 +199,7 @@ export default function SettingPage() {
             정말 초기화하시겠습니까?
           </h3>
           <p className="py-4 text-base-content/70">
-            모든 설정과 저장된 데이터가 삭제됩니다.
-            <br />
-            이 작업은 <strong className="text-error">되돌릴 수 없습니다.</strong>
+            모든 설정이 삭제됩니다.
           </p>
           <div className="modal-action">
             <form method="dialog">
@@ -176,7 +229,6 @@ export default function SettingPage() {
         </form>
       </dialog>
 
-      {/* 하단 여백 */}
       <div className="pb-8" />
     </div>
   );

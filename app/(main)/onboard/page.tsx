@@ -2,30 +2,76 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Sparkles } from "lucide-react";
+import { Sparkles, XCircle } from "lucide-react";
 import { DEFAULT_SETTINGS } from "@/app/constants/settings";
+import { useUserSettings } from "@/app/hooks/useUserSettings";
 import InvestmentStyleSlider from "@/app/components/InvestmentStyleSlider";
 import SalaryAllocationSlider from "@/app/components/SalaryAllocationSlider";
 import RoastLevelSlider from "@/app/components/RoastLevelSlider";
 
+// Toast 타입 정의
+type ToastType = 'success' | 'error' | 'warning' | 'info';
+
+interface Toast {
+  message: string;
+  type: ToastType;
+}
+
 export default function OnboardPage() {
   const router = useRouter();
+  const { saveSettings } = useUserSettings();
+
   const [investmentStyle, setInvestmentStyle] = useState(DEFAULT_SETTINGS.investmentStyle);
   const [livingExpenseRatio, setLivingExpenseRatio] = useState(DEFAULT_SETTINGS.livingExpenseRatio);
   const [investmentRatio, setInvestmentRatio] = useState(DEFAULT_SETTINGS.investmentRatio);
   const [roastLevel, setRoastLevel] = useState(DEFAULT_SETTINGS.roastLevel);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Toast 상태
+  const [toast, setToast] = useState<Toast | null>(null);
+
+  // Toast 표시 함수
+  const showToast = (message: string, type: ToastType = 'error', duration = 3000) => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), duration);
+  };
+
   // 제출 핸들러
   const handleSubmit = async () => {
     setIsSubmitting(true);
-    // 실제로는 API 호출하여 데이터 저장
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    router.push("/home");
+
+    // LocalStorage에 저장
+    const success = saveSettings({
+      investment_style: investmentStyle,
+      living_expense_ratio: livingExpenseRatio,
+      investment_ratio: investmentRatio,
+      roast_level: roastLevel,
+    });
+
+    if (success) {
+      router.push("/home");
+    } else {
+      showToast("설정 저장에 실패했습니다.", "error");
+    }
+    setIsSubmitting(false);
   };
 
   return (
     <div className="p-4 space-y-6 max-w-lg mx-auto">
+      {/* Toast 컴포넌트 - 상단 중앙 */}
+      {toast && (
+        <div className="toast toast-top toast-center z-50">
+          <div className={`alert ${toast.type === 'success' ? 'alert-success' :
+              toast.type === 'error' ? 'alert-error' :
+                toast.type === 'warning' ? 'alert-warning' :
+                  'alert-info'
+            }`}>
+            {toast.type === 'error' && <XCircle className="w-5 h-5" />}
+            <span>{toast.message}</span>
+          </div>
+        </div>
+      )}
+
       {/* 헤더 */}
       <div className="text-center py-4">
         <h1 className="text-2xl font-bold flex items-center justify-center gap-2">
