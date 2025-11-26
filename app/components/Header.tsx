@@ -1,24 +1,32 @@
 "use client";
 
-import { useMiniKit } from "@coinbase/onchainkit/minikit";
 import { LogOut, Wallet } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useAccount, useDisconnect } from "wagmi";
 
 export default function Header() {
-  const { context } = useMiniKit();
   const router = useRouter();
+  const { address } = useAccount();
+  const { disconnect } = useDisconnect();
+
+  // 지갑 주소 축약 표시 (0x1234...5678 형식)
+  const formatAddress = (addr: string | undefined) => {
+    if (!addr) return "User";
+    return `${addr.slice(0, 6)}...${addr.slice(-4)}`;
+  };
 
   const handleLogout = () => {
-    console.log("Logout");
-    // 로그아웃 처리 로직 추가 (예: 토큰 삭제 등)
-    router.push("/"); // 홈으로 리다이렉트
+    // wagmi disconnect를 통해 지갑 연결 해제
+    disconnect();
+    // 홈으로 리다이렉트
+    router.push("/");
   };
 
   return (
     <div className="flex justify-between items-center bg-transparent py-4 px-4">
       <Wallet className="w-4 h-4 text-green-500" />
-      {/* 실제 유저 정보가 없으면 test 표시, context에서 가져옴 */}
-      {context?.user?.displayName || "User"}
+      {/* 지갑 주소 표시 (축약형) */}
+      {formatAddress(address)}
       <LogOut className="w-4 h-4 cursor-pointer" onClick={handleLogout} />
     </div>
   );
