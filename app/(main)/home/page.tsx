@@ -1,6 +1,6 @@
 "use client";
 
-import { TrendingUp, TrendingDown, Minus, ArrowUpRight, ArrowDownRight, Wallet, PieChart, Activity } from "lucide-react";
+import { TrendingUp, TrendingDown, ArrowUpRight, ArrowDownRight, Wallet, PieChart, Activity } from "lucide-react";
 
 // 모의 데이터
 const mockData = {

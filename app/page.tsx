@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { useQuickAuth, useMiniKit } from "@coinbase/onchainkit/minikit";
 import { useRouter } from "next/navigation";
 import { useConnectModal } from "@rainbow-me/rainbowkit";
-import { useAccount } from "wagmi";
+import { useAccount, useDisconnect } from "wagmi";
 import { useUserSettings } from "@/app/hooks/useUserSettings";
 import { minikitConfig } from "../minikit.config";
 import styles from "./page.module.css";
@@ -25,12 +25,19 @@ export default function Home() {
   const [error, setError] = useState("");
   const router = useRouter();
   const { openConnectModal } = useConnectModal();
-  const { isConnected } = useAccount();
+  const { isConnected, address } = useAccount();
+  const { disconnect } = useDisconnect();
 
   // useUserSettings 훅 사용
   const { hasCompletedOnboarding, isLoading } = useUserSettings();
 
   const isBaseApp = !!context;
+
+  // 지갑 주소 축약 표시 (0x1234...5678 형식)
+  const formatAddress = (addr: string | undefined) => {
+    if (!addr) return "Connecting...";
+    return `${addr.slice(0, 6)}...${addr.slice(-4)}`;
+  };
 
 
   useEffect(() => {
@@ -51,22 +58,9 @@ export default function Home() {
     }
   }, [isConnected, isLoading, hasCompletedOnboarding, router]);
 
-  // If you need to verify the user's identity, you can use the useQuickAuth hook.
-  // This hook will verify the user's signature and return the user's FID. You can update
-  // this to meet your needs. See the /app/api/auth/route.ts file for more details.
-  // Note: If you don't need to verify the user's identity, you can get their FID and other user data
-  // via `context.user.fid`.
-  // const { data, isLoading, error } = useQuickAuth<{
-  //   userFid: string;
-  // }>("/api/auth");
-
-  const { data: authData, isLoading: isAuthLoading, error: authError } = useQuickAuth<AuthResponse>(
-    "/api/auth",
-    { method: "GET" }
-  );
 
   const handleLogout = () => {
-    console.log("Logout");
+    disconnect();
   };
 
   const handleConnectWallet = () => {
@@ -86,21 +80,25 @@ export default function Home() {
 
   return (
     <div className={styles.container}>
-      <div className="flex justify-end py-4 px-4">
-        <div className="badge badge-outline badge-md flex text-center items-center gap-2">
-          <Wallet className="w-4 h-4 text-green-500" />
-          {context?.user?.displayName || "Guest"}
-          <LogOut className="w-4 h-4 cursor-pointer" onClick={handleLogout} />
+      {isBaseApp && (
+        <div className="flex justify-end py-4 px-4">
+          <div className="badge badge-outline badge-md flex text-center items-center gap-2">
+            <Wallet className="w-4 h-4 text-green-500" />
+            {formatAddress(address)}
+            <LogOut className="w-4 h-4 cursor-pointer" onClick={handleLogout} />
+          </div>
         </div>
-      </div>
+      )}
       <div className={styles.content}>
         <div className="card card-xl w-96 bg-base-100 shadow-sm">
           <div className="card-body items-center text-center">
             <h2 className="card-title">{minikitConfig.miniapp.name.toUpperCase()}</h2>
-            <div className="badge badge-outline badge-md flex text-center items-center gap-2">
-              <Wallet className="w-4 h-4 text-green-500" />
-              {context?.user?.displayName || "Guest"}
-            </div>
+            {isBaseApp && (
+              <div className="badge badge-outline badge-md flex text-center items-center gap-2">
+                <Wallet className="w-4 h-4 text-green-500" />
+                {formatAddress(address)}
+              </div>
+            )}
             <div className="text-center">
               여기에 설명 넣기
             </div>
