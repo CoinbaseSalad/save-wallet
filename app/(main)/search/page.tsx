@@ -3,6 +3,9 @@
 import { useState } from "react";
 import { Search, Wallet, TrendingUp, TrendingDown, ArrowUpRight, ArrowDownRight, PieChart, Activity } from "lucide-react";
 
+// TODO: 검색 실패 toast 추가
+// TODO: 검색 실패시 로직 추가 (실패 이유 toast 표시 및 검색 카드 재표시)
+
 // 검색 결과 모의 데이터
 const mockSearchResult = {
   address: "0x1234...5678",

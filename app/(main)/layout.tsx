@@ -3,11 +3,11 @@
 import Header from "@/app/components/Header";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, FileText, Search, User } from "lucide-react";
+import { Home, Wallet, Search, User } from "lucide-react";
 
 const navItems = [
   { href: "/home", label: "Home", icon: Home },
-  { href: "/report", label: "Report", icon: FileText },
+  { href: "/asset", label: "Asset", icon: Wallet },
   { href: "/search", label: "Search", icon: Search },
   { href: "/user", label: "User", icon: User },
 ];
