@@ -1,6 +1,9 @@
 import { Errors, createClient } from "@farcaster/quick-auth";
 import { NextRequest, NextResponse } from "next/server";
 
+// Cloudflare Edge Runtime 설정 추가
+export const runtime = 'edge';
+
 const client = createClient();
 
 // Helper function to determine the correct domain for JWT verification
