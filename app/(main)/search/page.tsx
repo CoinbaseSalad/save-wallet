@@ -72,7 +72,7 @@ const getEvaluationText = (evaluation: string) => {
 
 // 스켈레톤 로딩 컴포넌트
 const SearchResultSkeleton = () => (
-  <div className="space-y-6 animate-pulse">
+  <div className="p-4 space-y-6 max-w-lg mx-auto animate-pulse">
     {/* 지갑 건강도 스켈레톤 */}
     <div className="card bg-base-200 shadow-lg">
       <div className="card-body">
@@ -144,7 +144,7 @@ export default function SearchPage() {
   const totalValue = searchResult?.portfolio.reduce((sum, p) => sum + p.value, 0) || 0;
 
   return (
-    <div className={`p-4 ${!isSearching ? "min-h-[calc(100vh-200px)] flex items-center justify-center" : "space-y-6"}`}>
+    <div className={`p-4 max-w-lg mx-auto ${!isSearching ? "min-h-[calc(100vh-200px)] flex items-center justify-center" : "space-y-6"}`}>
       {/* 지갑 주소 입력 영역 */}
       <div
         className={`card bg-base-200 shadow-lg transition-all duration-500 ease-out w-full max-w-md ${isSearching ? "transform -translate-y-2 scale-95 opacity-0 h-0 overflow-hidden p-0 m-0" : ""

@@ -199,7 +199,7 @@ export default function ReportPage() {
   const { totalValue, totalChange24h, totalChangeValue, coins } = mockPortfolio;
 
   return (
-    <div className="p-4 space-y-6">
+    <div className="p-4 space-y-6 max-w-lg mx-auto">
       {/* 전체 자산 현황 */}
       <div className="card bg-base-200 shadow-lg">
         <div className="card-body">

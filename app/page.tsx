@@ -6,7 +6,6 @@ import { useConnectModal } from "@rainbow-me/rainbowkit";
 import { useAccount, useDisconnect } from "wagmi";
 import { useUserSettings } from "@/app/hooks/useUserSettings";
 import { minikitConfig } from "../minikit.config";
-import styles from "./page.module.css";
 import { LogOut, Wallet } from "lucide-react";
 
 
@@ -69,7 +68,7 @@ export default function Home() {
   };
 
   return (
-    <div className={styles.container}>
+    <div className="flex flex-col min-h-screen">
       {isBaseApp && (
         <div className="flex justify-end py-4 px-4">
           <div className="badge badge-outline badge-md flex text-center items-center gap-2">
@@ -79,7 +78,7 @@ export default function Home() {
           </div>
         </div>
       )}
-      <div className={styles.content}>
+      <div className="flex flex-col items-center justify-center flex-1 p-8">
         <div className="card card-xl w-96 bg-base-100 shadow-sm">
           <div className="card-body items-center text-center">
             <h2 className="card-title">{minikitConfig.miniapp.name.toUpperCase()}</h2>
@@ -97,12 +96,12 @@ export default function Home() {
                 type="button"
                 onClick={handleConnectWallet}
                 className="btn btn-primary mt-4">
-                {isBaseApp ? "Connect Wallet" : "Connect Wallet with RainbowKit"}
+                {isBaseApp ? "Connect Wallet" : "Connect Wallet"}
               </button>
             </div>
-            {error && <p className={styles.error}>{error}</p>}
+            {error && <p className="text-error text-sm">{error}</p>}
             {!isBaseApp && (
-              <p className="text-sm text-gray-500 mt-2">
+              <p className="text-sm text-base-content/50 mt-2">
                 일반 브라우저에서 접속 중입니다
               </p>
             )}
