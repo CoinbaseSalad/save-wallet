@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter, Source_Code_Pro } from "next/font/google";
 import { SafeArea } from "@coinbase/onchainkit/minikit";
+import { Toaster } from "sonner";
 import { minikitConfig } from "../minikit.config";
 import { RootProvider } from "./rootProvider";
 import "./globals.css";
@@ -45,6 +46,7 @@ export default function RootLayout({
       <body className={`${inter.variable} ${sourceCodePro.variable}`}>
         <RootProvider>
           <SafeArea>{children}</SafeArea>
+          <Toaster position="top-center" richColors />
         </RootProvider>
       </body>
     </html>

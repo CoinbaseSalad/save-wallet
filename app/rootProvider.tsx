@@ -6,6 +6,7 @@ import { WagmiProvider } from "wagmi";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { RainbowKitProvider } from "@rainbow-me/rainbowkit";
 import { config } from "./wagmi";
+import WalletGuard from "./components/WalletGuard";
 import "@coinbase/onchainkit/styles.css";
 import "@rainbow-me/rainbowkit/styles.css";
 
@@ -34,7 +35,7 @@ export function RootProvider({ children }: { children: ReactNode }) {
               notificationProxyUrl: undefined,
             }}
           >
-            {children}
+            <WalletGuard>{children}</WalletGuard>
           </OnchainKitProvider>
         </RainbowKitProvider>
       </QueryClientProvider>
