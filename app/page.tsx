@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
-import { useQuickAuth, useMiniKit } from "@coinbase/onchainkit/minikit";
+import { useMiniKit } from "@coinbase/onchainkit/minikit";
 import { useRouter } from "next/navigation";
 import { useConnectModal } from "@rainbow-me/rainbowkit";
 import { useAccount, useDisconnect } from "wagmi";
@@ -8,16 +8,6 @@ import { useUserSettings } from "@/app/hooks/useUserSettings";
 import { minikitConfig } from "../minikit.config";
 import styles from "./page.module.css";
 import { LogOut, Wallet } from "lucide-react";
-
-interface AuthResponse {
-  success: boolean;
-  user?: {
-    fid: number; // FID is the unique identifier for the user
-    issuedAt?: number;
-    expiresAt?: number;
-  };
-  message?: string; // Error messages come as 'message' not 'error'
-}
 
 
 export default function Home() {
