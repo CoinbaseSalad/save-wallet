@@ -1,6 +1,7 @@
 "use client";
 
-import { TrendingUp, TrendingDown, ArrowUpRight, ArrowDownRight, Wallet, PieChart, Activity } from "lucide-react";
+import { useState, useRef, useMemo } from "react";
+import { TrendingUp, TrendingDown, ArrowUpRight, ArrowDownRight, Wallet, PieChart, Activity, ChevronDown, ChevronUp } from "lucide-react";
 
 // 모의 데이터
 const mockData = {
@@ -11,6 +12,9 @@ const mockData = {
     { id: 2, coin: "ETH", type: "sell", amount: 2.5, price: 3420, date: "2024-11-24", evaluation: "neutral", comment: "적절한 익절" },
     { id: 3, coin: "SOL", type: "buy", amount: 15, price: 245, date: "2024-11-23", evaluation: "bad", comment: "고점 매수 주의" },
     { id: 4, coin: "DOGE", type: "buy", amount: 1000, price: 0.42, date: "2024-11-22", evaluation: "neutral", comment: "변동성 큰 종목" },
+    { id: 5, coin: "BTC", type: "sell", amount: 0.02, price: 68100, date: "2024-11-21", evaluation: "good", comment: "적절한 차익 실현" },
+    { id: 6, coin: "ETH", type: "buy", amount: 1.5, price: 3280, date: "2024-11-20", evaluation: "good", comment: "저점 매수" },
+    { id: 7, coin: "AVAX", type: "buy", amount: 50, price: 38, date: "2024-11-19", evaluation: "neutral", comment: "분산 투자" },
   ],
   portfolio: [
     { coin: "BTC", amount: 0.15, value: 10087.5, allocation: 45, change24h: 2.3 },
@@ -66,9 +70,59 @@ const getEvaluationText = (evaluation: string) => {
   }
 };
 
+const INITIAL_TRADES_COUNT = 4;
+
+// 날짜를 간단한 형식으로 변환 (11/25)
+const formatDateShort = (dateStr: string) => {
+  const parts = dateStr.split("-");
+  return `${parseInt(parts[1])}/${parseInt(parts[2])}`;
+};
+
 export default function HomePage() {
   const { overallScore, evaluation, recentTrades, portfolio, investStyle } = mockData;
   const totalValue = portfolio.reduce((sum, p) => sum + p.value, 0);
+  const [isExpanded, setIsExpanded] = useState(false);
+  const dateRefs = useRef<Record<string, HTMLDivElement | null>>({});
+
+  const displayedTrades = isExpanded ? recentTrades : recentTrades.slice(0, INITIAL_TRADES_COUNT);
+  const hasMoreTrades = recentTrades.length > INITIAL_TRADES_COUNT;
+
+  // 날짜별 거래 횟수 계산
+  const dateTradeCount = useMemo(() => {
+    return recentTrades.reduce((acc, trade) => {
+      acc[trade.date] = (acc[trade.date] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+  }, [recentTrades]);
+
+  // 월별로 날짜 그룹화
+  const datesByMonth = useMemo(() => {
+    const grouped: Record<string, { date: string; day: number; count: number }[]> = {};
+    Object.entries(dateTradeCount).forEach(([date, count]) => {
+      const parts = date.split("-");
+      const month = parseInt(parts[1]);
+      const day = parseInt(parts[2]);
+      if (!grouped[month]) grouped[month] = [];
+      grouped[month].push({ date, day, count });
+    });
+    // 각 월 내에서 일자 내림차순 정렬
+    Object.values(grouped).forEach(dates => dates.sort((a, b) => b.day - a.day));
+    return grouped;
+  }, [dateTradeCount]);
+
+  // 날짜 클릭 시 해당 위치로 스크롤
+  const scrollToDate = (date: string) => {
+    // 먼저 확장
+    if (!isExpanded) {
+      setIsExpanded(true);
+      // 약간의 딜레이 후 스크롤 (확장 애니메이션 완료 후)
+      setTimeout(() => {
+        dateRefs.current[date]?.scrollIntoView({ behavior: "smooth", block: "center" });
+      }, 100);
+    } else {
+      dateRefs.current[date]?.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  };
 
   return (
     <div className="p-4 space-y-6 max-w-lg mx-auto">
@@ -117,42 +171,105 @@ export default function HomePage() {
           <h2 className="card-title text-lg flex items-center gap-2">
             <Wallet className="w-5 h-5 text-secondary" />
             최근 거래 평가
+            <span className="text-xs text-base-content/60 font-normal">(최근 7일)</span>
           </h2>
 
-          <ul className="timeline timeline-vertical">
-            {recentTrades.map((trade, index) => (
-              <li key={trade.id}>
-                {index > 0 && <hr className={trade.evaluation === "good" ? "bg-success" : trade.evaluation === "bad" ? "bg-error" : "bg-warning"} />}
-                <div className="timeline-start text-xs text-base-content/60">
-                  {trade.date}
+          {/* 날짜별 거래 횟수 뱃지 - 월/일 2행 분리 */}
+          <div className="w-full mt-2 flex divide-x divide-base-content/20">
+            {Object.entries(datesByMonth).map(([month, dates]) => (
+              <div key={month} className="flex-1 flex flex-col items-center gap-1 px-2">
+                {/* 월 라벨 */}
+                <span className="text-xs text-base-content/60 font-medium">{month}월</span>
+                {/* 일자 버튼 */}
+                <div className="flex gap-1 justify-center flex-wrap">
+                  {dates.map(({ date, day, count }) => (
+                    <button
+                      key={date}
+                      className="btn btn-xs btn-ghost gap-0.5 px-2 hover:btn-primary transition-colors"
+                      onClick={() => scrollToDate(date)}
+                    >
+                      {day}
+                      <span className="badge badge-xs badge-primary">{count}</span>
+                    </button>
+                  ))}
                 </div>
-                <div className="timeline-middle">
-                  <div className={`w-3 h-3 rounded-full ${trade.type === "buy" ? "bg-success" : "bg-error"}`} />
-                </div>
-                <div className="timeline-end timeline-box bg-base-100">
-                  <div className="flex items-center justify-between gap-2 mb-1">
-                    <div className="flex items-center gap-2">
-                      <span className="font-bold">{trade.coin}</span>
-                      <span className={`badge badge-sm ${trade.type === "buy" ? "badge-success" : "badge-error"}`}>
-                        {trade.type === "buy" ? "매수" : "매도"}
-                        {trade.type === "buy" ? <ArrowUpRight className="w-3 h-3 ml-1" /> : <ArrowDownRight className="w-3 h-3 ml-1" />}
-                      </span>
-                    </div>
-                    <span className={`badge badge-sm ${getEvaluationBadge(trade.evaluation)}`}>
-                      {getEvaluationText(trade.evaluation)}
-                    </span>
-                  </div>
-                  <div className="text-xs text-base-content/70">
-                    {trade.amount} {trade.coin} @ ${trade.price.toLocaleString()}
-                  </div>
-                  <div className="text-xs mt-1 italic text-base-content/60">
-                    💡 {trade.comment}
-                  </div>
-                </div>
-                {index < recentTrades.length - 1 && <hr className={recentTrades[index + 1]?.evaluation === "good" ? "bg-success" : recentTrades[index + 1]?.evaluation === "bad" ? "bg-error" : "bg-warning"} />}
-              </li>
+              </div>
             ))}
-          </ul>
+          </div>
+
+          {/* Chat Bubbles 스타일 거래 내역 */}
+          <div className="space-y-1 mt-4">
+            {displayedTrades.map((trade, index) => {
+              const prevTrade = displayedTrades[index - 1];
+              const showDateDivider = !prevTrade || prevTrade.date !== trade.date;
+
+              return (
+                <div key={trade.id}>
+                  {/* 날짜 구분선 */}
+                  {showDateDivider && (
+                    <div
+                      ref={(el) => { dateRefs.current[trade.date] = el; }}
+                      className="divider text-xs text-base-content/50 my-3"
+                    >
+                      {trade.date}
+                    </div>
+                  )}
+
+                  {/* 채팅 버블 스타일 거래 카드 */}
+                  <div className={`chat ${trade.type === "buy" ? "chat-start" : "chat-end"}`}>
+                    <div className="chat-image">
+                      <div className={`w-8 h-8 rounded-full flex items-center justify-center ${trade.type === "buy" ? "bg-success/20" : "bg-error/20"
+                        }`}>
+                        {trade.type === "buy" ? (
+                          <ArrowUpRight className="w-4 h-4 text-success" />
+                        ) : (
+                          <ArrowDownRight className="w-4 h-4 text-error" />
+                        )}
+                      </div>
+                    </div>
+                    <div className={`chat-bubble ${trade.type === "buy" ? "bg-success/10" : "bg-error/10"
+                      } text-base-content`}>
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="font-bold">{trade.coin}</span>
+                        <span className={`badge badge-xs ${trade.type === "buy" ? "badge-success" : "badge-error"}`}>
+                          {trade.type === "buy" ? "매수" : "매도"}
+                        </span>
+                        <span className={`badge badge-xs ${getEvaluationBadge(trade.evaluation)}`}>
+                          {getEvaluationText(trade.evaluation)}
+                        </span>
+                      </div>
+                      <div className="text-xs text-base-content/70">
+                        {trade.amount.toLocaleString()} {trade.coin} @ ${trade.price.toLocaleString()}
+                      </div>
+                      <div className="text-xs mt-1 italic text-base-content/60">
+                        💡 {trade.comment}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* 확장/축소 버튼 */}
+          {hasMoreTrades && (
+            <button
+              className="btn btn-ghost btn-sm w-full mt-2"
+              onClick={() => setIsExpanded(!isExpanded)}
+            >
+              {isExpanded ? (
+                <>
+                  <ChevronUp className="w-4 h-4" />
+                  접기
+                </>
+              ) : (
+                <>
+                  <ChevronDown className="w-4 h-4" />
+                  {recentTrades.length - INITIAL_TRADES_COUNT}개 더보기
+                </>
+              )}
+            </button>
+          )}
         </div>
       </div>
 

@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { Search, Wallet, TrendingUp, TrendingDown, ArrowUpRight, ArrowDownRight, PieChart, Activity } from "lucide-react";
+import { useState, useRef, useMemo } from "react";
+import { Search, Wallet, TrendingUp, TrendingDown, ArrowUpRight, ArrowDownRight, PieChart, Activity, ChevronDown, ChevronUp } from "lucide-react";
 
 // TODO: 검색 실패 toast 추가
 // TODO: 검색 실패시 로직 추가 (실패 이유 toast 표시 및 검색 카드 재표시)
@@ -15,6 +15,9 @@ const mockSearchResult = {
     { id: 1, coin: "ETH", type: "buy", amount: 10, price: 3380, date: "2024-11-25", evaluation: "neutral", comment: "평균적인 진입" },
     { id: 2, coin: "BTC", type: "sell", amount: 0.1, price: 68000, date: "2024-11-24", evaluation: "good", comment: "적절한 타이밍" },
     { id: 3, coin: "PEPE", type: "buy", amount: 50000000, price: 0.000021, date: "2024-11-23", evaluation: "bad", comment: "고위험 밈코인" },
+    { id: 4, coin: "SOL", type: "sell", amount: 20, price: 248, date: "2024-11-22", evaluation: "good", comment: "좋은 익절 타이밍" },
+    { id: 5, coin: "DOGE", type: "buy", amount: 5000, price: 0.38, date: "2024-11-21", evaluation: "bad", comment: "밈코인 추가 매수" },
+    { id: 6, coin: "ETH", type: "sell", amount: 5, price: 3450, date: "2024-11-20", evaluation: "neutral", comment: "부분 익절" },
   ],
   portfolio: [
     { coin: "ETH", amount: 25, value: 85500, allocation: 55, change24h: -1.5 },
@@ -70,6 +73,14 @@ const getEvaluationText = (evaluation: string) => {
   }
 };
 
+const INITIAL_TRADES_COUNT = 4;
+
+// 날짜를 간단한 형식으로 변환 (11/25)
+const formatDateShort = (dateStr: string) => {
+  const parts = dateStr.split("-");
+  return `${parseInt(parts[1])}/${parseInt(parts[2])}`;
+};
+
 // 스켈레톤 로딩 컴포넌트
 const SearchResultSkeleton = () => (
   <div className="p-4 space-y-6 max-w-lg mx-auto animate-pulse">
@@ -120,6 +131,8 @@ export default function SearchPage() {
   const [isSearching, setIsSearching] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [searchResult, setSearchResult] = useState<typeof mockSearchResult | null>(null);
+  const [isTradesExpanded, setIsTradesExpanded] = useState(false);
+  const dateRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
   const handleSearch = async () => {
     if (!walletAddress.trim()) return;
@@ -139,9 +152,51 @@ export default function SearchPage() {
     setIsSearching(false);
     setSearchResult(null);
     setWalletAddress("");
+    setIsTradesExpanded(false);
   };
 
   const totalValue = searchResult?.portfolio.reduce((sum, p) => sum + p.value, 0) || 0;
+
+  const displayedTrades = searchResult
+    ? (isTradesExpanded ? searchResult.recentTrades : searchResult.recentTrades.slice(0, INITIAL_TRADES_COUNT))
+    : [];
+  const hasMoreTrades = searchResult ? searchResult.recentTrades.length > INITIAL_TRADES_COUNT : false;
+
+  // 날짜별 거래 횟수 계산
+  const dateTradeCount = useMemo(() => {
+    if (!searchResult) return {};
+    return searchResult.recentTrades.reduce((acc, trade) => {
+      acc[trade.date] = (acc[trade.date] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+  }, [searchResult]);
+
+  // 월별로 날짜 그룹화
+  const datesByMonth = useMemo(() => {
+    const grouped: Record<string, { date: string; day: number; count: number }[]> = {};
+    Object.entries(dateTradeCount).forEach(([date, count]) => {
+      const parts = date.split("-");
+      const month = parseInt(parts[1]);
+      const day = parseInt(parts[2]);
+      if (!grouped[month]) grouped[month] = [];
+      grouped[month].push({ date, day, count });
+    });
+    // 각 월 내에서 일자 내림차순 정렬
+    Object.values(grouped).forEach(dates => dates.sort((a, b) => b.day - a.day));
+    return grouped;
+  }, [dateTradeCount]);
+
+  // 날짜 클릭 시 해당 위치로 스크롤
+  const scrollToDate = (date: string) => {
+    if (!isTradesExpanded) {
+      setIsTradesExpanded(true);
+      setTimeout(() => {
+        dateRefs.current[date]?.scrollIntoView({ behavior: "smooth", block: "center" });
+      }, 100);
+    } else {
+      dateRefs.current[date]?.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  };
 
   return (
     <div className={`p-4 max-w-lg mx-auto ${!isSearching ? "min-h-[calc(100vh-200px)] flex items-center justify-center" : "space-y-6"}`}>
@@ -257,62 +312,105 @@ export default function SearchPage() {
                     <h2 className="card-title text-lg flex items-center gap-2">
                       <Wallet className="w-5 h-5 text-secondary" />
                       최근 거래 평가
+                      <span className="text-xs text-base-content/60 font-normal">(최근 7일)</span>
                     </h2>
 
-                    <ul className="timeline timeline-vertical">
-                      {searchResult.recentTrades.map((trade, index) => (
-                        <li key={trade.id}>
-                          {index > 0 && (
-                            <hr
-                              className={
-                                trade.evaluation === "good"
-                                  ? "bg-success"
-                                  : trade.evaluation === "bad"
-                                    ? "bg-error"
-                                    : "bg-warning"
-                              }
-                            />
-                          )}
-                          <div className="timeline-start text-xs text-base-content/60">{trade.date}</div>
-                          <div className="timeline-middle">
-                            <div className={`w-3 h-3 rounded-full ${trade.type === "buy" ? "bg-success" : "bg-error"}`} />
+                    {/* 날짜별 거래 횟수 뱃지 - 월/일 2행 분리 */}
+                    <div className="w-full mt-2 flex divide-x divide-base-content/20">
+                      {Object.entries(datesByMonth).map(([month, dates]) => (
+                        <div key={month} className="flex-1 flex flex-col items-center gap-1 px-2">
+                          {/* 월 라벨 */}
+                          <span className="text-xs text-base-content/60 font-medium">{month}월</span>
+                          {/* 일자 버튼 */}
+                          <div className="flex gap-1 justify-center flex-wrap">
+                            {dates.map(({ date, day, count }) => (
+                              <button
+                                key={date}
+                                className="btn btn-xs btn-ghost gap-0.5 px-2 hover:btn-primary transition-colors"
+                                onClick={() => scrollToDate(date)}
+                              >
+                                {day}
+                                <span className="badge badge-xs badge-primary">{count}</span>
+                              </button>
+                            ))}
                           </div>
-                          <div className="timeline-end timeline-box bg-base-100">
-                            <div className="flex items-center justify-between gap-2 mb-1">
-                              <div className="flex items-center gap-2">
-                                <span className="font-bold">{trade.coin}</span>
-                                <span className={`badge badge-sm ${trade.type === "buy" ? "badge-success" : "badge-error"}`}>
-                                  {trade.type === "buy" ? "매수" : "매도"}
-                                  {trade.type === "buy" ? (
-                                    <ArrowUpRight className="w-3 h-3 ml-1" />
-                                  ) : (
-                                    <ArrowDownRight className="w-3 h-3 ml-1" />
-                                  )}
-                                </span>
-                              </div>
-                              <span className={`badge badge-sm ${getEvaluationBadge(trade.evaluation)}`}>
-                                {getEvaluationText(trade.evaluation)}
-                              </span>
-                            </div>
-                            <div className="text-xs text-base-content/70">
-                              {trade.amount.toLocaleString()} {trade.coin} @ ${trade.price.toLocaleString()}
-                            </div>
-                            <div className="text-xs mt-1 italic text-base-content/60">💡 {trade.comment}</div>
-                          </div>
-                          {index < searchResult.recentTrades.length - 1 && (
-                            <hr
-                              className={
-                                searchResult.recentTrades[index + 1]?.evaluation === "good"
-                                  ? "bg-success"
-                                  : searchResult.recentTrades[index + 1]?.evaluation === "bad"
-                                    ? "bg-error"
-                                    : "bg-warning"
-                              }
-                            />
-                          )}
-                        </li>
+                        </div>
                       ))}
-                    </ul>
+                    </div>
+
+                    {/* Chat Bubbles 스타일 거래 내역 */}
+                    <div className="space-y-1 mt-4">
+                      {displayedTrades.map((trade, index) => {
+                        const prevTrade = displayedTrades[index - 1];
+                        const showDateDivider = !prevTrade || prevTrade.date !== trade.date;
+
+                        return (
+                          <div key={trade.id}>
+                            {/* 날짜 구분선 */}
+                            {showDateDivider && (
+                              <div
+                                ref={(el) => { dateRefs.current[trade.date] = el; }}
+                                className="divider text-xs text-base-content/50 my-3"
+                              >
+                                {trade.date}
+                              </div>
+                            )}
+
+                            {/* 채팅 버블 스타일 거래 카드 */}
+                            <div className={`chat ${trade.type === "buy" ? "chat-start" : "chat-end"}`}>
+                              <div className="chat-image">
+                                <div className={`w-8 h-8 rounded-full flex items-center justify-center ${trade.type === "buy" ? "bg-success/20" : "bg-error/20"
+                                  }`}>
+                                  {trade.type === "buy" ? (
+                                    <ArrowUpRight className="w-4 h-4 text-success" />
+                                  ) : (
+                                    <ArrowDownRight className="w-4 h-4 text-error" />
+                                  )}
+                                </div>
+                              </div>
+                              <div className={`chat-bubble ${trade.type === "buy" ? "bg-success/10" : "bg-error/10"
+                                } text-base-content`}>
+                                <div className="flex items-center gap-2 mb-1">
+                                  <span className="font-bold">{trade.coin}</span>
+                                  <span className={`badge badge-xs ${trade.type === "buy" ? "badge-success" : "badge-error"}`}>
+                                    {trade.type === "buy" ? "매수" : "매도"}
+                                  </span>
+                                  <span className={`badge badge-xs ${getEvaluationBadge(trade.evaluation)}`}>
+                                    {getEvaluationText(trade.evaluation)}
+                                  </span>
+                                </div>
+                                <div className="text-xs text-base-content/70">
+                                  {trade.amount.toLocaleString()} {trade.coin} @ ${trade.price.toLocaleString()}
+                                </div>
+                                <div className="text-xs mt-1 italic text-base-content/60">
+                                  💡 {trade.comment}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    {/* 확장/축소 버튼 */}
+                    {hasMoreTrades && (
+                      <button
+                        className="btn btn-ghost btn-sm w-full mt-2"
+                        onClick={() => setIsTradesExpanded(!isTradesExpanded)}
+                      >
+                        {isTradesExpanded ? (
+                          <>
+                            <ChevronUp className="w-4 h-4" />
+                            접기
+                          </>
+                        ) : (
+                          <>
+                            <ChevronDown className="w-4 h-4" />
+                            {searchResult.recentTrades.length - INITIAL_TRADES_COUNT}개 더보기
+                          </>
+                        )}
+                      </button>
+                    )}
                   </div>
                 </div>
 
