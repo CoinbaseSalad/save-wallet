@@ -22,13 +22,20 @@ function getUrlHost(request: NextRequest): string {
     return host;
   }
 
-  // Final fallback to environment variables (your original logic)
+  // Final fallback to environment variables
   let urlValue: string;
-  if (process.env.VERCEL_ENV === "production") {
-    urlValue = process.env.NEXT_PUBLIC_URL!;
+
+  if (process.env.NEXT_PUBLIC_URL) {
+    // 사용자가 설정한 URL 최우선 (Cloudflare/Vercel 프로덕션 모두 권장)
+    urlValue = process.env.NEXT_PUBLIC_URL;
+  } else if (process.env.CF_PAGES_URL) {
+    // Cloudflare Pages 미리보기/배포 URL
+    urlValue = process.env.CF_PAGES_URL;
   } else if (process.env.VERCEL_URL) {
+    // Vercel 미리보기 URL
     urlValue = `https://${process.env.VERCEL_URL}`;
   } else {
+    // 로컬 개발 환경
     urlValue = "http://localhost:3000";
   }
 
