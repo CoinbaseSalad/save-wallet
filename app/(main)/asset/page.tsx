@@ -1,120 +1,9 @@
 "use client";
 
-import { TrendingUp, TrendingDown, AlertTriangle, AlertCircle, ExternalLink, Wallet, ChevronDown } from "lucide-react";
-
-// 코인 이미지 URL (실제 서비스에서는 API에서 가져옴)
-const coinImages: Record<string, string> = {
-  BTC: "https://cryptologos.cc/logos/bitcoin-btc-logo.png",
-  ETH: "https://cryptologos.cc/logos/ethereum-eth-logo.png",
-  SOL: "https://cryptologos.cc/logos/solana-sol-logo.png",
-  DOGE: "https://cryptologos.cc/logos/dogecoin-doge-logo.png",
-  PEPE: "https://cryptologos.cc/logos/pepe-pepe-logo.png",
-  XRP: "https://cryptologos.cc/logos/xrp-xrp-logo.png",
-};
-
-// 위험도 타입
-type RiskLevel = "safe" | "caution" | "warning";
-
-// 중요도 타입
-type Importance = "high" | "medium" | "low";
-
-// 근거 링크 타입
-interface RiskSource {
-  title: string;
-  url: string;
-  importance: Importance;
-}
-
-// 모의 데이터
-const mockPortfolio = {
-  totalValue: 34000,
-  totalChange24h: 2.5,
-  totalChangeValue: 850,
-  coins: [
-    {
-      symbol: "BTC",
-      name: "Bitcoin",
-      amount: 0.15,
-      value: 10087.5,
-      price: 67250,
-      change24h: 2.3,
-      riskLevel: "safe" as RiskLevel,
-      riskReason: null,
-      riskSources: [] as RiskSource[],
-    },
-    {
-      symbol: "ETH",
-      name: "Ethereum",
-      amount: 5.2,
-      value: 17784,
-      price: 3420,
-      change24h: -1.2,
-      riskLevel: "caution" as RiskLevel,
-      riskReason: "최근 네트워크 혼잡으로 가스비 급등",
-      riskSources: [
-        { title: "Etherscan Gas Tracker - 현재 가스비 급등 확인", url: "https://etherscan.io/gastracker", importance: "high" as Importance },
-        { title: "ETH 네트워크 혼잡도 분석 리포트", url: "https://etherscan.io/chart/networkutilization", importance: "high" as Importance },
-        { title: "이더리움 재단 공식 블로그", url: "https://blog.ethereum.org", importance: "medium" as Importance },
-        { title: "DeFi 프로토콜 TVL 현황", url: "https://defillama.com", importance: "medium" as Importance },
-        { title: "ETH 가격 변동 히스토리", url: "https://coingecko.com/eth", importance: "low" as Importance },
-      ] as RiskSource[],
-    },
-    {
-      symbol: "SOL",
-      name: "Solana",
-      amount: 20,
-      value: 4900,
-      price: 245,
-      change24h: 5.7,
-      riskLevel: "warning" as RiskLevel,
-      riskReason: "단기 급등으로 조정 가능성 높음",
-      riskSources: [
-        { title: "SOL 7일 급등률 47% - 과매수 구간 진입", url: "https://solscan.io", importance: "high" as Importance },
-        { title: "RSI 지표 80 이상 - 기술적 조정 신호", url: "https://tradingview.com/sol", importance: "high" as Importance },
-        { title: "솔라나 네트워크 장애 이력 분석", url: "https://status.solana.com", importance: "high" as Importance },
-        { title: "SOL 생태계 TVL 급증 현황", url: "https://defillama.com/chain/solana", importance: "medium" as Importance },
-        { title: "주요 거래소 SOL 거래량 분석", url: "https://coinmarketcap.com/sol", importance: "medium" as Importance },
-        { title: "솔라나 밈코인 열풍 관련 뉴스", url: "https://decrypt.co/solana", importance: "low" as Importance },
-        { title: "SOL 스테이킹 수익률 변화", url: "https://solanabeach.io/validators", importance: "low" as Importance },
-      ] as RiskSource[],
-    },
-    {
-      symbol: "DOGE",
-      name: "Dogecoin",
-      amount: 1000,
-      value: 420,
-      price: 0.42,
-      change24h: -3.5,
-      riskLevel: "warning" as RiskLevel,
-      riskReason: "높은 변동성, 밈코인 특성상 급락 위험",
-      riskSources: [
-        { title: "밈코인 시장 변동성 경고 - 블룸버그", url: "https://bloomberg.com/crypto", importance: "high" as Importance },
-        { title: "DOGE 30일 변동성 분석 (±40%)", url: "https://dogechain.info", importance: "high" as Importance },
-        { title: "일론 머스크 트윗 영향도 분석", url: "https://twitter.com/elonmusk", importance: "medium" as Importance },
-        { title: "DOGE 고래 지갑 이동 모니터링", url: "https://bitinfocharts.com/doge", importance: "medium" as Importance },
-        { title: "밈코인 투자 리스크 가이드", url: "https://investopedia.com/memecoins", importance: "low" as Importance },
-      ] as RiskSource[],
-    },
-    {
-      symbol: "XRP",
-      name: "Ripple",
-      amount: 500,
-      value: 808.5,
-      price: 1.617,
-      change24h: 1.8,
-      riskLevel: "caution" as RiskLevel,
-      riskReason: "SEC 소송 관련 불확실성 존재",
-      riskSources: [
-        { title: "SEC vs Ripple 소송 진행 현황", url: "https://xrpscan.com", importance: "high" as Importance },
-        { title: "리플 법률팀 공식 성명", url: "https://ripple.com/insights", importance: "high" as Importance },
-        { title: "XRP 규제 리스크 분석 리포트", url: "https://messari.io/xrp", importance: "medium" as Importance },
-        { title: "미국 암호화폐 규제 동향", url: "https://sec.gov/crypto", importance: "medium" as Importance },
-        { title: "XRP 레저 네트워크 현황", url: "https://xrpl.org", importance: "low" as Importance },
-        { title: "리플넷 파트너십 현황", url: "https://ripple.com/ripplenet", importance: "low" as Importance },
-      ] as RiskSource[],
-    },
-  ],
-};
+import { useState, useEffect, useCallback } from "react";
+import { TrendingUp, TrendingDown, AlertTriangle, AlertCircle, ExternalLink, Wallet, ChevronDown, RefreshCw } from "lucide-react";
+import { useAccount } from "wagmi";
+import type { AssetsResponse, AssetsResponseData, CoinDetail, RiskSource, RiskLevel, Importance } from "@/app/api/wallet/types";
 
 // 위험도에 따른 아이콘 및 색상
 const getRiskIcon = (riskLevel: RiskLevel) => {
@@ -195,31 +84,193 @@ const SourceItem = ({ source }: { source: RiskSource }) => (
   </a>
 );
 
-export default function ReportPage() {
-  const { totalValue, totalChange24h, totalChangeValue, coins } = mockPortfolio;
+// 스켈레톤 로딩 컴포넌트
+const AssetPageSkeleton = () => (
+  <div className="p-4 space-y-6 max-w-lg mx-auto animate-pulse">
+    {/* 전체 자산 현황 스켈레톤 */}
+    <div className="card bg-base-200 shadow-lg">
+      <div className="card-body">
+        <div className="skeleton h-6 w-32 mb-4"></div>
+        <div className="skeleton h-24 w-full mb-4"></div>
+        <div className="flex gap-2">
+          <div className="skeleton h-6 w-20"></div>
+          <div className="skeleton h-6 w-20"></div>
+          <div className="skeleton h-6 w-20"></div>
+        </div>
+      </div>
+    </div>
+
+    {/* 코인 카드 스켈레톤 */}
+    <div className="space-y-4">
+      <div className="skeleton h-6 w-24"></div>
+      {[1, 2, 3].map((i) => (
+        <div key={i} className="card bg-base-200 shadow-lg">
+          <div className="card-body p-4">
+            <div className="flex items-start gap-4">
+              <div className="skeleton h-14 w-14 rounded-full"></div>
+              <div className="flex-1 space-y-2">
+                <div className="skeleton h-5 w-24"></div>
+                <div className="skeleton h-4 w-32"></div>
+                <div className="skeleton h-16 w-full rounded-lg"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+);
+
+export default function AssetPage() {
+  const { address, isConnected } = useAccount();
+  
+  // API 데이터 상태
+  const [data, setData] = useState<AssetsResponseData | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // API 호출 함수
+  const fetchAssets = useCallback(async () => {
+    if (!address) {
+      setIsLoading(false);
+      return;
+    }
+
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const response = await fetch('/api/wallet/assets', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          walletAddress: address,
+          chainKey: 'base',
+        }),
+      });
+
+      const result: AssetsResponse = await response.json();
+
+      if (result.success && result.data) {
+        setData(result.data);
+      } else {
+        setError(result.error?.message || '자산 데이터를 가져오는데 실패했습니다.');
+      }
+    } catch (err) {
+      console.error('API 호출 오류:', err);
+      setError('서버 연결에 실패했습니다.');
+    } finally {
+      setIsLoading(false);
+    }
+  }, [address]);
+
+  // 지갑 연결 시 데이터 로드
+  useEffect(() => {
+    if (isConnected && address) {
+      fetchAssets();
+    }
+  }, [isConnected, address, fetchAssets]);
+
+  // 데이터 추출
+  const summary = data?.summary;
+  const coins = data?.coins || [];
+  const portfolioAnalysis = data?.portfolioAnalysis;
+
+  // 지갑 미연결 상태
+  if (!isConnected) {
+    return (
+      <div className="p-4 max-w-lg mx-auto min-h-[calc(100vh-200px)] flex items-center justify-center">
+        <div className="card bg-base-200 shadow-lg">
+          <div className="card-body text-center">
+            <Wallet className="w-16 h-16 mx-auto text-primary mb-4" />
+            <h2 className="card-title justify-center">지갑을 연결해주세요</h2>
+            <p className="text-sm text-base-content/70">
+              자산 현황을 확인하려면 먼저 지갑을 연결해주세요.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // 로딩 상태
+  if (isLoading) {
+    return <AssetPageSkeleton />;
+  }
+
+  // 에러 상태
+  if (error) {
+    return (
+      <div className="p-4 max-w-lg mx-auto min-h-[calc(100vh-200px)] flex items-center justify-center">
+        <div className="card bg-base-200 shadow-lg">
+          <div className="card-body text-center">
+            <div className="text-error text-4xl mb-4">⚠️</div>
+            <h2 className="card-title justify-center">오류가 발생했습니다</h2>
+            <p className="text-sm text-base-content/70">{error}</p>
+            <button className="btn btn-primary mt-4" onClick={fetchAssets}>
+              <RefreshCw className="w-4 h-4" />
+              다시 시도
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // 데이터가 없는 경우
+  if (!data || !summary) {
+    return (
+      <div className="p-4 max-w-lg mx-auto min-h-[calc(100vh-200px)] flex items-center justify-center">
+        <div className="card bg-base-200 shadow-lg">
+          <div className="card-body text-center">
+            <div className="text-4xl mb-4">📊</div>
+            <h2 className="card-title justify-center">데이터가 없습니다</h2>
+            <p className="text-sm text-base-content/70">
+              자산 데이터를 가져올 수 없습니다.
+            </p>
+            <button className="btn btn-primary mt-4" onClick={fetchAssets}>
+              <RefreshCw className="w-4 h-4" />
+              다시 시도
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-4 space-y-6 max-w-lg mx-auto">
       {/* 전체 자산 현황 */}
       <div className="card bg-base-200 shadow-lg">
         <div className="card-body">
-          <h2 className="card-title text-lg flex items-center gap-2">
-            <Wallet className="w-5 h-5 text-primary" />
-            전체 자산 현황
-          </h2>
+          <div className="flex items-center justify-between">
+            <h2 className="card-title text-lg flex items-center gap-2">
+              <Wallet className="w-5 h-5 text-primary" />
+              전체 자산 현황
+            </h2>
+            <button 
+              className="btn btn-ghost btn-sm btn-circle"
+              onClick={fetchAssets}
+              disabled={isLoading}
+            >
+              <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
+            </button>
+          </div>
 
           <div className="stats bg-base-100 shadow w-full">
             <div className="stat">
               <div className="stat-title">총 자산</div>
-              <div className="stat-value text-primary">${totalValue.toLocaleString()}</div>
-              <div className={`stat-desc flex items-center gap-1 ${totalChange24h >= 0 ? "text-success" : "text-error"}`}>
-                {totalChange24h >= 0 ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
-                {totalChange24h >= 0 ? "+" : ""}{totalChange24h}% (${totalChangeValue.toLocaleString()})
+              <div className="stat-value text-primary">${summary.totalValueUsd.toLocaleString()}</div>
+              <div className={`stat-desc flex items-center gap-1 ${summary.totalChange24h >= 0 ? "text-success" : "text-error"}`}>
+                {summary.totalChange24h >= 0 ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
+                {summary.totalChange24h >= 0 ? "+" : ""}{summary.totalChange24h.toFixed(1)}% (${Math.abs(summary.totalChangeValue).toLocaleString()})
               </div>
             </div>
             <div className="stat">
               <div className="stat-title">보유 코인</div>
-              <div className="stat-value">{coins.length}</div>
+              <div className="stat-value">{summary.totalCoins}</div>
               <div className="stat-desc">종목</div>
             </div>
           </div>
@@ -228,14 +279,14 @@ export default function ReportPage() {
           <div className="flex gap-2 mt-2">
             <div className="badge badge-error gap-1">
               <AlertTriangle className="w-3 h-3" />
-              경고 {coins.filter((c) => c.riskLevel === "warning").length}
+              경고 {summary.riskSummary.warning}
             </div>
             <div className="badge badge-warning gap-1">
               <AlertCircle className="w-3 h-3" />
-              주의 {coins.filter((c) => c.riskLevel === "caution").length}
+              주의 {summary.riskSummary.caution}
             </div>
             <div className="badge badge-success gap-1">
-              양호 {coins.filter((c) => c.riskLevel === "safe").length}
+              양호 {summary.riskSummary.safe}
             </div>
           </div>
 
@@ -275,9 +326,9 @@ export default function ReportPage() {
                   )}
                   <div className="avatar avatar-placeholder">
                     <div className="bg-white w-14 h-14 rounded-full ring ring-base-300 ring-offset-base-100 ring-offset-2">
-                      {coinImages[coin.symbol] ? (
+                      {coin.logo ? (
                         <img
-                          src={coinImages[coin.symbol]}
+                          src={coin.logo}
                           alt={coin.symbol}
                           className="p-2"
                           onError={(e) => {
@@ -310,7 +361,7 @@ export default function ReportPage() {
 
                   {/* 보유량 및 가격 */}
                   <div className="flex items-center justify-between mt-2 text-sm text-base-content/70">
-                    <span>보유량: {coin.amount.toLocaleString()} {coin.symbol}</span>
+                    <span>보유량: {coin.amount} {coin.symbol}</span>
                     <span>@${coin.price.toLocaleString()}</span>
                   </div>
 
@@ -368,49 +419,48 @@ export default function ReportPage() {
       </div>
 
       {/* 전체 포트폴리오 분석 */}
-      <div className="card bg-base-200 shadow-lg">
-        <div className="card-body">
-          <h3 className="card-title text-lg">포트폴리오 분석</h3>
+      {portfolioAnalysis && (
+        <div className="card bg-base-200 shadow-lg">
+          <div className="card-body">
+            <h3 className="card-title text-lg">포트폴리오 분석</h3>
 
-          <div className="alert alert-info">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" className="stroke-current shrink-0 w-6 h-6">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-            </svg>
-            <div>
-              <h4 className="font-bold text-sm">포트폴리오 요약</h4>
-              <ul className="text-xs mt-1 space-y-1">
-                <li>• BTC/ETH 비중 82% - 안정적인 대형 코인 중심</li>
-                <li>• SOL, DOGE는 높은 변동성 주의 필요</li>
-                <li>• 전체 위험도: 중간</li>
-              </ul>
+            <div className="alert alert-info">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" className="stroke-current shrink-0 w-6 h-6">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
+              <div>
+                <h4 className="font-bold text-sm">포트폴리오 요약</h4>
+                <ul className="text-xs mt-1 space-y-1">
+                  {portfolioAnalysis.summary.map((item, idx) => (
+                    <li key={idx}>• {item}</li>
+                  ))}
+                </ul>
+              </div>
             </div>
-          </div>
 
-          {/* 자산 배분 차트 (간단한 bar) */}
-          <div className="mt-4 space-y-2">
-            <div className="text-sm font-semibold mb-2">자산 배분</div>
-            {coins.map((coin) => {
-              const percentage = (coin.value / totalValue) * 100;
-              return (
-                <div key={coin.symbol} className="flex items-center gap-2">
-                  <span className="w-12 text-xs font-medium">{coin.symbol}</span>
+            {/* 자산 배분 차트 (간단한 bar) */}
+            <div className="mt-4 space-y-2">
+              <div className="text-sm font-semibold mb-2">자산 배분</div>
+              {portfolioAnalysis.allocationChart.map((item) => (
+                <div key={item.symbol} className="flex items-center gap-2">
+                  <span className="w-12 text-xs font-medium">{item.symbol}</span>
                   <progress
-                    className={`progress flex-1 ${coin.riskLevel === "warning"
+                    className={`progress flex-1 ${item.riskLevel === "warning"
                       ? "progress-error"
-                      : coin.riskLevel === "caution"
+                      : item.riskLevel === "caution"
                         ? "progress-warning"
                         : "progress-success"
                       }`}
-                    value={percentage}
+                    value={item.percentage}
                     max="100"
                   />
-                  <span className="w-12 text-xs text-right">{percentage.toFixed(1)}%</span>
+                  <span className="w-12 text-xs text-right">{item.percentage.toFixed(1)}%</span>
                 </div>
-              );
-            })}
+              ))}
+            </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

@@ -12,6 +12,9 @@ import {
 // Node.js Runtime 사용 (Moralis SDK가 Edge Runtime과 호환되지 않음)
 export const runtime = 'nodejs';
 
+// 목업 모드 환경 변수 (true면 실제 API 호출 대신 목업 데이터 반환)
+const USE_MOCK_DATA = process.env.USE_MOCK_DATA === 'true';
+
 // 위험도 타입
 type RiskLevel = 'safe' | 'caution' | 'warning';
 
@@ -115,6 +118,232 @@ const CHAIN_EXPLORERS: Record<string, string> = {
 
 // 네이티브 토큰 심볼
 const NATIVE_TOKENS = ['ETH', 'MATIC'];
+
+// ============================================
+// 목업 데이터 (flock API 비용 절감용)
+// ============================================
+const MOCK_RESPONSE: AssetsResponse = {
+  success: true,
+  data: {
+    walletAddress: '0x1234567890abcdef1234567890abcdef12345678',
+    chainKey: 'base',
+    summary: {
+      totalValueUsd: 34000,
+      totalChange24h: 2.5,
+      totalChangeValue: 850,
+      totalCoins: 5,
+      riskSummary: {
+        warning: 2,
+        caution: 2,
+        safe: 1,
+      },
+    },
+    coins: [
+      {
+        symbol: 'BTC',
+        name: 'Bitcoin',
+        logo: 'https://assets.coingecko.com/coins/images/1/small/bitcoin.png',
+        contractAddress: null,
+        amount: '0.15',
+        value: 10087.5,
+        price: 67250,
+        change24h: 2.3,
+        allocation: 29.7,
+        riskLevel: 'safe',
+        riskReason: null,
+        riskSources: [],
+        securityInfo: {
+          isVerified: true,
+          isHoneypot: false,
+          buyTax: 0,
+          sellTax: 0,
+          riskScore: 0,
+        },
+      },
+      {
+        symbol: 'ETH',
+        name: 'Ethereum',
+        logo: 'https://assets.coingecko.com/coins/images/279/small/ethereum.png',
+        contractAddress: null,
+        amount: '5.2',
+        value: 17784,
+        price: 3420,
+        change24h: -1.2,
+        allocation: 52.3,
+        riskLevel: 'caution',
+        riskReason: '최근 네트워크 혼잡으로 가스비 급등',
+        riskSources: [
+          {
+            title: 'Etherscan Gas Tracker - 현재 가스비 급등 확인',
+            url: 'https://etherscan.io/gastracker',
+            importance: 'high',
+            summary: '현재 가스비가 평균보다 200% 높습니다.',
+          },
+          {
+            title: 'ETH 네트워크 혼잡도 분석 리포트',
+            url: 'https://etherscan.io/chart/networkutilization',
+            importance: 'high',
+            summary: '네트워크 사용률이 95%를 초과했습니다.',
+          },
+          {
+            title: '이더리움 재단 공식 블로그',
+            url: 'https://blog.ethereum.org',
+            importance: 'medium',
+            summary: '다음 업그레이드 일정 확인',
+          },
+        ],
+        securityInfo: {
+          isVerified: true,
+          isHoneypot: false,
+          buyTax: 0,
+          sellTax: 0,
+          riskScore: 10,
+        },
+      },
+      {
+        symbol: 'SOL',
+        name: 'Solana',
+        logo: 'https://assets.coingecko.com/coins/images/4128/small/solana.png',
+        contractAddress: '0x570A5D26f7765Ecb712C0924E4De545B89fD43dF',
+        amount: '20',
+        value: 4900,
+        price: 245,
+        change24h: 5.7,
+        allocation: 14.4,
+        riskLevel: 'warning',
+        riskReason: '단기 급등으로 조정 가능성 높음',
+        riskSources: [
+          {
+            title: 'SOL 7일 급등률 47% - 과매수 구간 진입',
+            url: 'https://solscan.io',
+            importance: 'high',
+            summary: 'RSI 지표가 80 이상으로 과매수 상태입니다.',
+          },
+          {
+            title: 'RSI 지표 80 이상 - 기술적 조정 신호',
+            url: 'https://tradingview.com/sol',
+            importance: 'high',
+            summary: '기술적 분석상 조정이 예상됩니다.',
+          },
+          {
+            title: '솔라나 네트워크 장애 이력 분석',
+            url: 'https://status.solana.com',
+            importance: 'high',
+            summary: '최근 6개월간 3회의 네트워크 장애 발생',
+          },
+          {
+            title: 'SOL 생태계 TVL 급증 현황',
+            url: 'https://defillama.com/chain/solana',
+            importance: 'medium',
+            summary: 'TVL이 30일간 120% 증가했습니다.',
+          },
+        ],
+        securityInfo: {
+          isVerified: true,
+          isHoneypot: false,
+          buyTax: 0,
+          sellTax: 0,
+          riskScore: 35,
+        },
+      },
+      {
+        symbol: 'DOGE',
+        name: 'Dogecoin',
+        logo: 'https://assets.coingecko.com/coins/images/5/small/dogecoin.png',
+        contractAddress: '0x4206931337dc273a630d328dA6441786BfaD668f',
+        amount: '1000',
+        value: 420,
+        price: 0.42,
+        change24h: -3.5,
+        allocation: 1.2,
+        riskLevel: 'warning',
+        riskReason: '높은 변동성, 밈코인 특성상 급락 위험',
+        riskSources: [
+          {
+            title: '밈코인 시장 변동성 경고 - 블룸버그',
+            url: 'https://bloomberg.com/crypto',
+            importance: 'high',
+            summary: '밈코인 시장의 전반적인 변동성이 높습니다.',
+          },
+          {
+            title: 'DOGE 30일 변동성 분석 (±40%)',
+            url: 'https://dogechain.info',
+            importance: 'high',
+            summary: '30일간 가격 변동폭이 ±40%입니다.',
+          },
+          {
+            title: '일론 머스크 트윗 영향도 분석',
+            url: 'https://twitter.com/elonmusk',
+            importance: 'medium',
+            summary: '소셜 미디어 영향을 많이 받는 토큰입니다.',
+          },
+        ],
+        securityInfo: {
+          isVerified: true,
+          isHoneypot: false,
+          buyTax: 0,
+          sellTax: 0,
+          riskScore: 45,
+        },
+      },
+      {
+        symbol: 'XRP',
+        name: 'Ripple',
+        logo: 'https://assets.coingecko.com/coins/images/44/small/xrp-symbol-white-128.png',
+        contractAddress: '0x1D2F0da169ceB9fC7B3144628dB156f3F6c60dBE',
+        amount: '500',
+        value: 808.5,
+        price: 1.617,
+        change24h: 1.8,
+        allocation: 2.4,
+        riskLevel: 'caution',
+        riskReason: 'SEC 소송 관련 불확실성 존재',
+        riskSources: [
+          {
+            title: 'SEC vs Ripple 소송 진행 현황',
+            url: 'https://xrpscan.com',
+            importance: 'high',
+            summary: '소송이 아직 완전히 종결되지 않았습니다.',
+          },
+          {
+            title: '리플 법률팀 공식 성명',
+            url: 'https://ripple.com/insights',
+            importance: 'high',
+            summary: '법적 상황에 대한 최신 업데이트',
+          },
+          {
+            title: 'XRP 규제 리스크 분석 리포트',
+            url: 'https://messari.io/xrp',
+            importance: 'medium',
+            summary: '규제 환경 변화 가능성 분석',
+          },
+        ],
+        securityInfo: {
+          isVerified: true,
+          isHoneypot: false,
+          buyTax: 0,
+          sellTax: 0,
+          riskScore: 25,
+        },
+      },
+    ],
+    portfolioAnalysis: {
+      summary: [
+        'BTC/ETH 비중 82% - 안정적인 대형 코인 중심',
+        'SOL, DOGE는 높은 변동성 주의 필요',
+        '전체 위험도: 중간',
+      ],
+      allocationChart: [
+        { symbol: 'ETH', percentage: 52.3, riskLevel: 'caution' },
+        { symbol: 'BTC', percentage: 29.7, riskLevel: 'safe' },
+        { symbol: 'SOL', percentage: 14.4, riskLevel: 'warning' },
+        { symbol: 'XRP', percentage: 2.4, riskLevel: 'caution' },
+        { symbol: 'DOGE', percentage: 1.2, riskLevel: 'warning' },
+      ],
+    },
+  },
+  timestamp: new Date().toISOString(),
+};
 
 // GoPlus 보안 데이터를 기반으로 위험 근거 생성
 function generateRiskSources(
@@ -348,6 +577,22 @@ export async function POST(request: NextRequest): Promise<NextResponse<AssetsRes
     // 요청 본문 파싱
     const body: AssetsRequest = await request.json();
     const { walletAddress, chainKey } = body;
+
+    // 목업 모드: 실제 API 호출 없이 목업 데이터 반환
+    if (USE_MOCK_DATA) {
+      console.log('[assets] 목업 모드 활성화 - 목업 데이터 반환');
+      // 요청된 지갑 주소로 목업 데이터 업데이트
+      const mockResponse = {
+        ...MOCK_RESPONSE,
+        data: MOCK_RESPONSE.data ? {
+          ...MOCK_RESPONSE.data,
+          walletAddress: walletAddress || MOCK_RESPONSE.data.walletAddress,
+          chainKey: chainKey || MOCK_RESPONSE.data.chainKey,
+        } : undefined,
+        timestamp,
+      };
+      return NextResponse.json(mockResponse, { status: 200 });
+    }
 
     // 필수 파라미터 검증
     if (!walletAddress) {

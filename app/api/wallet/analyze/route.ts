@@ -13,6 +13,9 @@ import {
 // Node.js Runtime 사용 (Moralis SDK가 Edge Runtime과 호환되지 않음)
 export const runtime = 'nodejs';
 
+// 목업 모드 환경 변수 (true면 실제 API 호출 대신 목업 데이터 반환)
+const USE_MOCK_DATA = process.env.USE_MOCK_DATA === 'true';
+
 // API 요청 타입
 interface AnalyzeRequest {
   walletAddress: string;
@@ -94,6 +97,185 @@ function isValidAddress(address: string): boolean {
 
 // 지원 체인 목록
 const SUPPORTED_CHAINS = ['base', 'ethereum', 'polygon', 'arbitrum'];
+
+// ============================================
+// 목업 데이터 (flock API 비용 절감용)
+// ============================================
+const MOCK_RESPONSE: AnalyzeResponse = {
+  success: true,
+  data: {
+    walletAddress: '0x1234567890abcdef1234567890abcdef12345678',
+    chainKey: 'base',
+    aiEvaluation: {
+      overallScore: 7.2,
+      evaluation: '전반적으로 안정적인 투자 패턴을 보이고 있습니다. BTC/ETH 중심의 포트폴리오로 리스크 관리가 잘 되어 있습니다.',
+      riskLevel: '중간',
+      tradingFrequency: '주 3-5회',
+      investmentStyleMatch: '사용자의 투자 성향과 82% 일치합니다.',
+      portfolioAdvice: 'BTC 비중이 높은 안정적인 포트폴리오입니다. SOL 고점 매수에 주의하세요. 밈코인 비중을 줄이고 스테이블코인 비중을 늘리는 것을 권장합니다.',
+      riskWarnings: [
+        'SOL 단기 급등으로 조정 가능성 있음',
+        'DOGE는 높은 변동성 주의 필요',
+      ],
+      improvementSuggestions: [
+        '스테이블코인(USDC, USDT) 10-15% 비중 추가 권장',
+        '밈코인 비중을 5% 이하로 줄이기',
+        '분산투자를 위해 DeFi 토큰 검토',
+      ],
+    },
+    recentTrades: [
+      {
+        hash: '0xabc123...',
+        coin: 'BTC',
+        coinLogo: 'https://assets.coingecko.com/coins/images/1/small/bitcoin.png',
+        type: 'buy',
+        amount: '0.05',
+        price: 67250,
+        valueUsd: 3362.5,
+        date: '2024-11-25',
+        evaluation: 'good',
+        comment: '좋은 진입점입니다. 지지선 근처에서 매수했습니다.',
+      },
+      {
+        hash: '0xdef456...',
+        coin: 'ETH',
+        coinLogo: 'https://assets.coingecko.com/coins/images/279/small/ethereum.png',
+        type: 'sell',
+        amount: '2.5',
+        price: 3420,
+        valueUsd: 8550,
+        date: '2024-11-24',
+        evaluation: 'neutral',
+        comment: '적절한 익절입니다. 다만 조금 더 기다렸으면 좋았을 수 있습니다.',
+      },
+      {
+        hash: '0xghi789...',
+        coin: 'SOL',
+        coinLogo: 'https://assets.coingecko.com/coins/images/4128/small/solana.png',
+        type: 'buy',
+        amount: '15',
+        price: 245,
+        valueUsd: 3675,
+        date: '2024-11-23',
+        evaluation: 'bad',
+        comment: '고점 매수 주의! RSI가 과매수 구간입니다.',
+      },
+      {
+        hash: '0xjkl012...',
+        coin: 'DOGE',
+        coinLogo: 'https://assets.coingecko.com/coins/images/5/small/dogecoin.png',
+        type: 'buy',
+        amount: '1000',
+        price: 0.42,
+        valueUsd: 420,
+        date: '2024-11-22',
+        evaluation: 'neutral',
+        comment: '밈코인 투자는 변동성이 큽니다. 비중 관리에 주의하세요.',
+      },
+      {
+        hash: '0xmno345...',
+        coin: 'BTC',
+        coinLogo: 'https://assets.coingecko.com/coins/images/1/small/bitcoin.png',
+        type: 'sell',
+        amount: '0.02',
+        price: 68100,
+        valueUsd: 1362,
+        date: '2024-11-21',
+        evaluation: 'good',
+        comment: '적절한 차익 실현입니다.',
+      },
+      {
+        hash: '0xpqr678...',
+        coin: 'ETH',
+        coinLogo: 'https://assets.coingecko.com/coins/images/279/small/ethereum.png',
+        type: 'buy',
+        amount: '1.5',
+        price: 3280,
+        valueUsd: 4920,
+        date: '2024-11-20',
+        evaluation: 'good',
+        comment: '저점 매수! 좋은 타이밍입니다.',
+      },
+      {
+        hash: '0xstu901...',
+        coin: 'AVAX',
+        coinLogo: 'https://assets.coingecko.com/coins/images/12559/small/Avalanche_Circle_RedWhite_Trans.png',
+        type: 'buy',
+        amount: '50',
+        price: 38,
+        valueUsd: 1900,
+        date: '2024-11-19',
+        evaluation: 'neutral',
+        comment: '분산 투자 차원에서 좋은 선택입니다.',
+      },
+    ],
+    portfolio: {
+      totalValueUsd: 34000,
+      totalChange24h: 2.1,
+      totalChangeValue: 714,
+      coins: [
+        {
+          symbol: 'BTC',
+          name: 'Bitcoin',
+          logo: 'https://assets.coingecko.com/coins/images/1/small/bitcoin.png',
+          amount: '0.15',
+          value: 10087.5,
+          price: 67250,
+          change24h: 2.3,
+          allocation: 45,
+        },
+        {
+          symbol: 'ETH',
+          name: 'Ethereum',
+          logo: 'https://assets.coingecko.com/coins/images/279/small/ethereum.png',
+          amount: '5.2',
+          value: 17784,
+          price: 3420,
+          change24h: -1.2,
+          allocation: 35,
+        },
+        {
+          symbol: 'SOL',
+          name: 'Solana',
+          logo: 'https://assets.coingecko.com/coins/images/4128/small/solana.png',
+          amount: '20',
+          value: 4900,
+          price: 245,
+          change24h: 5.7,
+          allocation: 15,
+        },
+        {
+          symbol: 'DOGE',
+          name: 'Dogecoin',
+          logo: 'https://assets.coingecko.com/coins/images/5/small/dogecoin.png',
+          amount: '1000',
+          value: 420,
+          price: 0.42,
+          change24h: -3.5,
+          allocation: 3,
+        },
+        {
+          symbol: 'USDC',
+          name: 'USD Coin',
+          logo: 'https://assets.coingecko.com/coins/images/6319/small/usdc.png',
+          amount: '808.5',
+          value: 808.5,
+          price: 1,
+          change24h: 0,
+          allocation: 2,
+        },
+      ],
+    },
+    investStyle: {
+      riskLevel: '중간',
+      tradingFrequency: '주 3-5회',
+      preferredCoins: ['BTC', 'ETH', 'SOL'],
+      avgHoldingPeriod: '2-5일',
+      diversificationScore: 65,
+    },
+  },
+  timestamp: new Date().toISOString(),
+};
 
 // 평균 보유 기간 계산
 function calculateAvgHoldingPeriod(transfers: TokenTransfer[]): string {
@@ -178,6 +360,22 @@ export async function POST(request: NextRequest): Promise<NextResponse<AnalyzeRe
     // 요청 본문 파싱
     const body: AnalyzeRequest = await request.json();
     const { walletAddress, chainKey, userSettings } = body;
+
+    // 목업 모드: 실제 API 호출 없이 목업 데이터 반환
+    if (USE_MOCK_DATA) {
+      console.log('[analyze] 목업 모드 활성화 - 목업 데이터 반환');
+      // 요청된 지갑 주소로 목업 데이터 업데이트
+      const mockResponse = {
+        ...MOCK_RESPONSE,
+        data: MOCK_RESPONSE.data ? {
+          ...MOCK_RESPONSE.data,
+          walletAddress: walletAddress || MOCK_RESPONSE.data.walletAddress,
+          chainKey: chainKey || MOCK_RESPONSE.data.chainKey,
+        } : undefined,
+        timestamp,
+      };
+      return NextResponse.json(mockResponse, { status: 200 });
+    }
 
     // 필수 파라미터 검증
     if (!walletAddress) {
