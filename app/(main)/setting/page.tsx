@@ -2,20 +2,13 @@
 
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Settings, Save, RotateCcw, LogOut, AlertTriangle, CheckCircle, XCircle } from "lucide-react";
+import { Settings, Save, RotateCcw, LogOut, AlertTriangle } from "lucide-react";
+import { toast } from "sonner";
 import { useUserSettings } from "@/app/hooks/useUserSettings";
 import { useDisconnect } from "wagmi";
 import InvestmentStyleSlider from "@/app/components/InvestmentStyleSlider";
 import SalaryAllocationSlider from "@/app/components/SalaryAllocationSlider";
 import RoastLevelSlider from "@/app/components/RoastLevelSlider";
-
-// Toast 타입 정의
-type ToastType = 'success' | 'error' | 'warning' | 'info';
-
-interface Toast {
-  message: string;
-  type: ToastType;
-}
 
 export default function SettingPage() {
   const router = useRouter();
@@ -32,15 +25,6 @@ export default function SettingPage() {
   const [roastLevel, setRoastLevel] = useState(2);
   const [isSaving, setIsSaving] = useState(false);
   const [isResetting, setIsResetting] = useState(false);
-
-  // Toast 상태
-  const [toast, setToast] = useState<Toast | null>(null);
-
-  // Toast 표시 함수
-  const showToast = (message: string, type: ToastType = 'success', duration = 3000) => {
-    setToast({ message, type });
-    setTimeout(() => setToast(null), duration);
-  };
 
   // LocalStorage에서 불러온 데이터로 상태 동기화
   useEffect(() => {
@@ -73,9 +57,9 @@ export default function SettingPage() {
 
     setIsSaving(false);
     if (success) {
-      showToast('설정이 저장되었습니다!', 'success');
+      toast.success("설정이 저장되었습니다!");
     } else {
-      showToast('설정 저장에 실패했습니다.', 'error');
+      toast.error("설정 저장에 실패했습니다.");
     }
   };
 
@@ -98,22 +82,6 @@ export default function SettingPage() {
 
   return (
     <div className="p-4 space-y-6 max-w-lg mx-auto">
-      {/* Toast 컴포넌트 - 상단 중앙 */}
-      {toast && (
-        <div className="toast toast-top toast-center z-50">
-          <div className={`alert ${toast.type === 'success' ? 'alert-success' :
-              toast.type === 'error' ? 'alert-error' :
-                toast.type === 'warning' ? 'alert-warning' :
-                  'alert-info'
-            }`}>
-            {toast.type === 'success' && <CheckCircle className="w-5 h-5" />}
-            {toast.type === 'error' && <XCircle className="w-5 h-5" />}
-            {toast.type === 'warning' && <AlertTriangle className="w-5 h-5" />}
-            <span>{toast.message}</span>
-          </div>
-        </div>
-      )}
-
       {/* 헤더 */}
       <div className="text-center py-4">
         <h1 className="text-2xl font-bold flex items-center justify-center gap-2">
