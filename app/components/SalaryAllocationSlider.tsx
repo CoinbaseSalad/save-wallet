@@ -75,7 +75,7 @@ export default function SalaryAllocationSlider({
           </label>
           <input
             type="range"
-            min={30}
+            min={5}
             max={90}
             value={livingExpenseRatio}
             onChange={(e) => {
