@@ -6,6 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "pages:build": "npx @cloudflare/next-on-pages",
+    "pages:preview": "npm run pages:build && wrangler pages dev .vercel/output/static --compat-date=2024-11-27 --compatibility-flags=nodejs_compat",
     "start": "next start",
     "lint": "next lint"
   },
