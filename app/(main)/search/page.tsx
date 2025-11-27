@@ -76,7 +76,7 @@ const getEvaluationText = (evaluation: string) => {
 const INITIAL_TRADES_COUNT = 4;
 
 // 날짜를 간단한 형식으로 변환 (11/25)
-const formatDateShort = (dateStr: string) => {
+const _formatDateShort = (dateStr: string) => {
   const parts = dateStr.split("-");
   return `${parseInt(parts[1])}/${parseInt(parts[2])}`;
 };

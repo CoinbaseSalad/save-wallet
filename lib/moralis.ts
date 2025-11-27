@@ -1,6 +1,12 @@
 // lib/moralis.ts
 import Moralis from 'moralis';
 import { EvmChain } from '@moralisweb3/common-evm-utils';
+import {
+  buildRiskReportPrompt,
+  buildPortfolioEvalPrompt,
+  buildAssetDossierPrompt,
+  buildWalletRoastPrompt,
+} from './promptLoader';
 
 // Moralis 초기화 상태 관리
 let isInitialized = false;
@@ -1200,3 +1206,154 @@ export interface GoPlusWalletSecurity {
   maliciousType?: string;
   riskScore: number;
 }
+
+// ============================================
+// 프롬프트 템플릿 기반 분석 함수들
+// ============================================
+
+/**
+ * 스마트 컨트랙트 리스크 분석 (1_risk_report.txt 템플릿 사용)
+ */
+export async function analyzeContractRisk(
+  contractAddress: string,
+  chainKey: string
+): Promise<object | null> {
+  // GoPlus에서 컨트랙트 보안 정보 조회
+  const securityData = await checkTokenSecurity(contractAddress, chainKey);
+
+  if (!securityData) {
+    console.error('보안 데이터를 가져올 수 없습니다.');
+    return null;
+  }
+
+  const contractInfo = {
+    chain: chainKey,
+    address: contractAddress,
+    name: null, // 추후 Moralis에서 가져올 수 있음
+  };
+
+  const rawFlags = {
+    MINT_UNLIMITED: securityData.isMintable,
+    UPGRADEABLE_PROXY: securityData.isProxy,
+    HONEYPOT: securityData.isHoneypot,
+    HIGH_SELL_TAX: securityData.sellTax > 10,
+    HIDDEN_OWNER: securityData.hiddenOwner,
+    CAN_PAUSE: securityData.transferPausable,
+    BLACKLIST_ENABLED: securityData.isBlacklisted,
+  };
+
+  const dataSources = ['GoPlus'];
+
+  const prompt = buildRiskReportPrompt({
+    contractInfo,
+    rawFlags,
+    dataSources,
+  });
+
+  return await callFlockAI(prompt);
+}
+
+/**
+ * 포트폴리오 평가 분석 (2_portfolio_eval.txt 템플릿 사용)
+ */
+export async function analyzePortfolio(
+  walletAddress: string,
+  chainKey: string,
+  userGoal: string = 'balanced growth'
+): Promise<object | null> {
+  const walletData = await analyzeWalletData(walletAddress, chainKey);
+
+  const holdings = walletData.portfolio.portfolioCoins.map(coin => ({
+    symbol: coin.symbol,
+    name: coin.name,
+    weight_pct: coin.allocation,
+    value_usd: coin.value,
+    price: coin.price,
+    change_24h: coin.change24h,
+  }));
+
+  const recentTrades = walletData.recentTransfers.slice(0, 20).map(t => ({
+    date: t.blockTimestamp?.split('T')[0] || 'unknown',
+    type: t.direction === 'in' ? 'buy' : 'sell',
+    symbol: t.tokenSymbol,
+    amount: t.valueFormatted,
+  }));
+
+  const prompt = buildPortfolioEvalPrompt({
+    holdings,
+    cash: walletData.portfolio.nativeBalance.valueUsd || 0,
+    recentTrades,
+    baseCurrency: 'USD',
+    userGoal,
+  });
+
+  return await callFlockAI(prompt);
+}
+
+/**
+ * 자산 도시에 분석 (3_asset_dossier.txt 템플릿 사용)
+ */
+export async function analyzeAsset(
+  ticker: string,
+  name: string,
+  type: 'EQUITY' | 'CRYPTO',
+  chainOrExchange: string | null = null,
+  timeWindowDays: number = 14
+): Promise<object | null> {
+  const asset = {
+    ticker,
+    name,
+    type,
+    chain_or_exchange: chainOrExchange,
+  };
+
+  const prompt = buildAssetDossierPrompt({
+    asset,
+    timeWindowDays,
+  });
+
+  return await callFlockAI(prompt);
+}
+
+/**
+ * 월렛 로스트 분석 (4_wallet_roast.txt 템플릿 사용)
+ */
+export async function analyzeWalletRoast(
+  walletAddress: string,
+  chainKey: string
+): Promise<object | null> {
+  const walletData = await analyzeWalletData(walletAddress, chainKey);
+
+  const transactions = walletData.recentTransfers.map(t => ({
+    hash: t.hash,
+    date: t.blockTimestamp,
+    direction: t.direction,
+    token: t.tokenSymbol,
+    amount: t.valueFormatted,
+    value_usd: 0, // 추후 가격 데이터 추가 가능
+  }));
+
+  // 기간 계산 (일주일)
+  const now = new Date();
+  const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+  const period = {
+    from: weekAgo.toISOString().split('T')[0],
+    to: now.toISOString().split('T')[0],
+  };
+
+  const prompt = buildWalletRoastPrompt({
+    transactions,
+    period,
+    chain: chainKey,
+  });
+
+  return await callFlockAI(prompt);
+}
+
+// Re-export prompt builders for direct usage
+export {
+  buildRiskReportPrompt,
+  buildPortfolioEvalPrompt,
+  buildAssetDossierPrompt,
+  buildWalletRoastPrompt,
+} from './promptLoader';
