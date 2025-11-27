@@ -62,7 +62,7 @@ Content-Type: application/json
 | `userSettings.investmentStyle`    | number | ✅   | 투자 성향 (0: 안정형 ~ 4: 공격투자형)              |
 | `userSettings.livingExpenseRatio` | number | ✅   | 생활비 비율 (0-100, %)                             |
 | `userSettings.investmentRatio`    | number | ✅   | 투자 비율 (0-100, %)                               |
-| `userSettings.roastLevel`         | number | ✅   | Roast 강도 (0: Kind ~ 4: Hot)                      |
+| `userSettings.roastLevel`         | number | ✅   | Roast 강도 (0: Kind/가장 약함 ~ 4: Hot/가장 강함)  |
 
 #### 응답 (Response)
 

@@ -54,35 +54,35 @@ export const INVESTMENT_STYLES: InvestmentStyle[] = [
   },
 ];
 
-// Roast 강도 옵션
+// Roast 강도 옵션 (0: 가장 약함 → 4: 가장 강함)
 export const ROAST_LEVELS: RoastLevel[] = [
   {
     label: "Kind",
-    description: "부드럽고 격려하는 피드백을 제공합니다.",
+    description: "가장 부드러운 피드백. 격려와 긍정적인 면을 강조합니다.",
     emoji: "😊",
     thumbColor: "#38bdf8",
   },
   {
     label: "Mild",
-    description: "친절하지만 솔직한 피드백을 제공합니다.",
+    description: "약한 피드백. 친절하지만 개선점도 부드럽게 제안합니다.",
     emoji: "🙂",
     thumbColor: "#22d3ee",
   },
   {
     label: "Medium",
-    description: "균형 잡힌 현실적인 피드백을 제공합니다.",
+    description: "중간 강도. 균형 잡힌 현실적인 피드백을 제공합니다.",
     emoji: "😐",
     thumbColor: "#f59e0b",
   },
   {
     label: "Spicy",
-    description: "직설적이고 날카로운 피드백을 제공합니다.",
+    description: "강한 피드백. 직설적이고 날카로운 지적을 합니다.",
     emoji: "😤",
     thumbColor: "#f97316",
   },
   {
     label: "Hot",
-    description: "매우 직설적인 피드백으로 현실을 직시하게 합니다.",
+    description: "가장 강한 피드백. 거침없는 로스트 스타일로 현실을 직시하게 합니다.",
     emoji: "🔥",
     thumbColor: "#ef4444",
   },

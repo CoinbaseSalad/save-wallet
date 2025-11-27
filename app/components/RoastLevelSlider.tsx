@@ -41,11 +41,10 @@ export default function RoastLevelSlider({ value, onChange }: RoastLevelSliderPr
             {ROAST_LEVELS.map((level, idx) => (
               <div
                 key={idx}
-                className={`w-4 h-4 rounded-full transition-all duration-300 border-2 ${
-                  idx === value
+                className={`w-4 h-4 rounded-full transition-all duration-300 border-2 ${idx === value
                     ? "scale-125 border-base-content shadow-lg"
                     : "border-transparent"
-                }`}
+                  }`}
                 style={{
                   backgroundColor: level.thumbColor,
                   opacity: idx <= value ? 1 : 0.3,
@@ -53,11 +52,11 @@ export default function RoastLevelSlider({ value, onChange }: RoastLevelSliderPr
               />
             ))}
           </div>
-          {/* 라벨 표시 */}
+          {/* 라벨 표시 - 약함/강함 표시 */}
           <div className="flex justify-between mt-2 text-[10px]">
-            <span className="text-sky-500 font-medium">Kind 🤗</span>
+            <span className="text-sky-500 font-medium">약함 (Kind) 🤗</span>
             <span className="text-amber-500 font-medium">Medium</span>
-            <span className="text-red-500 font-medium">Hot 🔥</span>
+            <span className="text-red-500 font-medium">강함 (Hot) 🔥</span>
           </div>
         </div>
 

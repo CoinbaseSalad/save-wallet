@@ -6,27 +6,58 @@ import {
   buildPortfolioEvalPrompt,
   buildAssetDossierPrompt,
   buildWalletRoastPrompt,
+  buildWalletAnalysisPrompt,
 } from './promptLoader';
 
-// Moralis 초기화 상태 관리
-let isInitialized = false;
+// Moralis 초기화 Promise (한 번만 실행되도록 보장)
+let moralisInitPromise: Promise<void> | null = null;
 
 /**
  * Moralis SDK 초기화
  * 서버 시작 시 한 번만 실행됨
  */
 export async function initMoralis(): Promise<void> {
-  if (isInitialized) return;
-
+  // 환경 변수 확인
   if (!process.env.MORALIS_API_KEY) {
     throw new Error('MORALIS_API_KEY 환경 변수가 설정되지 않았습니다.');
   }
 
-  await Moralis.start({
-    apiKey: process.env.MORALIS_API_KEY,
-  });
+  // 이미 초기화 중이면 기존 Promise 반환
+  if (moralisInitPromise) {
+    return moralisInitPromise;
+  }
 
-  isInitialized = true;
+  moralisInitPromise = (async () => {
+    try {
+      // Moralis.Core.isStarted 확인 (이미 시작된 경우)
+      if (Moralis.Core?.isStarted) {
+        console.log('[Moralis] 이미 초기화됨');
+        return;
+      }
+    } catch {
+      // isStarted 확인 실패 시 계속 진행
+    }
+
+    try {
+      await Moralis.start({
+        apiKey: process.env.MORALIS_API_KEY,
+      });
+      console.log('[Moralis] 초기화 완료');
+    } catch (error) {
+      // 이미 초기화된 경우 (C0009 에러) - 무시
+      if (error instanceof Error &&
+        (error.message.includes('already') || error.message.includes('C0009'))) {
+        console.log('[Moralis] 이미 초기화됨 (C0009)');
+        return;
+      }
+      // 다른 오류는 초기화 Promise 리셋 후 다시 throw
+      moralisInitPromise = null;
+      console.error('[Moralis] 초기화 실패:', error);
+      throw error;
+    }
+  })();
+
+  return moralisInitPromise;
 }
 
 // 지원 체인 매핑
@@ -822,129 +853,98 @@ const INVESTMENT_STYLE_LABELS = [
   { label: '공격투자형', description: '최대 수익을 위해 높은 변동성과 손실 위험을 감수합니다.', emoji: '🔥' },
 ];
 
-// Roast 강도 레이블
+// Roast 강도 레이블 (0: 가장 약함 → 4: 가장 강함)
 const ROAST_LEVEL_LABELS = [
-  { label: 'Kind', description: '부드럽고 격려하는 피드백', emoji: '😊' },
-  { label: 'Mild', description: '친절하지만 솔직한 피드백', emoji: '🙂' },
-  { label: 'Medium', description: '균형 잡힌 현실적인 피드백', emoji: '😐' },
-  { label: 'Spicy', description: '직설적이고 날카로운 피드백', emoji: '😤' },
-  { label: 'Hot', description: '매우 직설적인 피드백으로 현실을 직시', emoji: '🔥' },
+  { label: 'Kind', description: '가장 약한 피드백 - 격려와 긍정 강조', emoji: '😊' },
+  { label: 'Mild', description: '약한 피드백 - 친절하고 부드러운 제안', emoji: '🙂' },
+  { label: 'Medium', description: '중간 피드백 - 균형 잡힌 현실적 평가', emoji: '😐' },
+  { label: 'Spicy', description: '강한 피드백 - 직설적이고 날카로운 지적', emoji: '😤' },
+  { label: 'Hot', description: '가장 강한 피드백 - 거침없는 로스트 스타일', emoji: '🔥' },
 ];
 
 /**
  * flock.io AI 분석 요청을 위한 프롬프트 생성
+ * promptLoader.ts의 buildWalletAnalysisPrompt를 활용
  */
 export function buildFlockAIPrompt(input: FlockAIAnalysisInput): string {
   const { walletData, tokenSecurityData, userSettings } = input;
 
   const styleInfo = INVESTMENT_STYLE_LABELS[userSettings.investmentStyle] || INVESTMENT_STYLE_LABELS[2];
-  const roastInfo = ROAST_LEVEL_LABELS[userSettings.roastLevel] || ROAST_LEVEL_LABELS[2];
 
-  // 포트폴리오 정보 문자열 생성
-  const portfolioStr = walletData.portfolioCoins.length > 0
-    ? walletData.portfolioCoins.map(c => {
+  // 포트폴리오 데이터 구성
+  const portfolioData = {
+    totalValueUsd: walletData.totalValueUsd,
+    tokenCount: walletData.portfolioCoins.length,
+    summary: walletData.summary,
+    tokens: walletData.portfolioCoins.map(c => {
       const security = tokenSecurityData.get(c.symbol.toLowerCase());
-      const securityInfo = security
-        ? `보안점수: ${100 - security.riskScore}/100${security.isHoneypot ? ' ⚠️허니팟' : ''}${security.sellTax > 5 ? ` ⚠️판매세: ${security.sellTax}%` : ''}`
-        : '보안정보 없음';
-      return `  - ${c.symbol} (${c.name})
-    · 비중: ${c.allocation.toFixed(1)}% | 가치: $${c.value.toFixed(2)}
-    · 가격: $${c.price.toFixed(4)} | 24h 변동: ${c.change24h > 0 ? '+' : ''}${c.change24h.toFixed(2)}%
-    · ${securityInfo}`;
-    }).join('\n')
-    : '  - 보유 토큰 없음';
+      return {
+        symbol: c.symbol,
+        name: c.name,
+        allocation: c.allocation,
+        value: c.value,
+        price: c.price,
+        change24h: c.change24h,
+        security: security ? {
+          score: 100 - security.riskScore,
+          isHoneypot: security.isHoneypot,
+          sellTax: security.sellTax,
+          riskLevel: security.riskLevel,
+        } : null,
+      };
+    }),
+  };
 
-  // 최근 거래 문자열 생성
-  const tradesStr = walletData.recentTransfers.length > 0
-    ? walletData.recentTransfers.slice(0, 15).map(t => {
-      const date = t.blockTimestamp ? t.blockTimestamp.split('T')[0] : '날짜 없음';
-      const type = t.direction === 'in' ? '📥 매수' : '📤 매도';
-      return `  - ${date} | ${type} | ${t.tokenSymbol} | 수량: ${t.valueFormatted}`;
-    }).join('\n')
-    : '  - 최근 일주일 거래 없음';
+  // 거래 데이터 구성
+  const tradesData = walletData.recentTransfers.slice(0, 15).map(t => ({
+    hash: t.hash,
+    date: t.blockTimestamp ? t.blockTimestamp.split('T')[0] : 'unknown',
+    direction: t.direction,
+    tokenSymbol: t.tokenSymbol,
+    amount: t.valueFormatted,
+  }));
 
-  // 위험 토큰 분석
-  const riskTokens = Array.from(tokenSecurityData.values())
-    .filter(s => s.riskLevel === 'warning' || s.isHoneypot || s.sellTax > 10)
-    .map(s => {
-      const warnings = [];
-      if (s.isHoneypot) warnings.push('허니팟');
-      if (s.cannotSellAll) warnings.push('전량 판매 불가');
-      if (s.sellTax > 10) warnings.push(`높은 판매세 ${s.sellTax}%`);
-      if (s.ownerChangeBalance) warnings.push('소유자 잔액 변경 가능');
-      if (s.hiddenOwner) warnings.push('숨겨진 소유자');
-      return `  - ${s.contractAddress.slice(0, 10)}...: ${warnings.join(', ')}`;
-    });
+  // 보안 경고 데이터 구성
+  const securityData = {
+    riskTokens: Array.from(tokenSecurityData.values())
+      .filter(s => s.riskLevel === 'warning' || s.isHoneypot || s.sellTax > 10)
+      .map(s => ({
+        address: s.contractAddress,
+        isHoneypot: s.isHoneypot,
+        cannotSellAll: s.cannotSellAll,
+        sellTax: s.sellTax,
+        ownerChangeBalance: s.ownerChangeBalance,
+        hiddenOwner: s.hiddenOwner,
+        riskLevel: s.riskLevel,
+      })),
+    totalChecked: tokenSecurityData.size,
+  };
 
-  // 투자 금액 배분 계산
+  // 사용자 프로필 구성
   const savingsRatio = 100 - userSettings.livingExpenseRatio - userSettings.investmentRatio;
+  const userProfileData = {
+    investmentStyle: {
+      level: userSettings.investmentStyle,
+      label: styleInfo.label,
+      description: styleInfo.description,
+    },
+    salaryAllocation: {
+      livingExpense: userSettings.livingExpenseRatio,
+      investment: userSettings.investmentRatio,
+      savings: savingsRatio,
+    },
+  };
 
-  return `당신은 암호화폐 투자 분석 및 평가 전문 AI입니다.
-아래 정보를 바탕으로 지갑을 종합 분석하고 평가해주세요.
-
-═══════════════════════════════════════════
-📊 지갑 정보
-═══════════════════════════════════════════
-- 지갑 주소: ${input.walletAddress}
-- 체인: ${input.chainKey}
-- 총 자산 가치: $${walletData.totalValueUsd.toFixed(2)}
-- 보유 토큰 수: ${walletData.portfolioCoins.length}개
-- 일주일간 거래: 매수 ${walletData.summary.transfersIn}건, 매도 ${walletData.summary.transfersOut}건
-
-═══════════════════════════════════════════
-💰 포트폴리오 현황
-═══════════════════════════════════════════
-${portfolioStr}
-
-═══════════════════════════════════════════
-📜 최근 거래 내역 (일주일)
-═══════════════════════════════════════════
-${tradesStr}
-
-═══════════════════════════════════════════
-⚠️ 보안 위험 토큰 (GoPlus 분석)
-═══════════════════════════════════════════
-${riskTokens.length > 0 ? riskTokens.join('\n') : '  - 위험 토큰 없음 ✅'}
-
-═══════════════════════════════════════════
-👤 사용자 프로필
-═══════════════════════════════════════════
-- 투자 성향: ${styleInfo.emoji} ${styleInfo.label}
-  → ${styleInfo.description}
-- 월 급여 배분:
-  · 생활비: ${userSettings.livingExpenseRatio}%
-  · 투자금: ${userSettings.investmentRatio}%
-  · 저축: ${savingsRatio}%
-- 피드백 강도: ${roastInfo.emoji} ${roastInfo.label}
-  → ${roastInfo.description}
-
-═══════════════════════════════════════════
-📋 분석 요청
-═══════════════════════════════════════════
-위 정보를 바탕으로 다음을 분석해주세요:
-
-1. **지갑 건강도 점수** (0-10): 포트폴리오 분산도, 보안 위험, 거래 패턴 종합
-2. **투자 성향 일치도**: 사용자의 설정된 투자 성향과 실제 포트폴리오가 얼마나 일치하는지
-3. **각 거래 평가**: 최근 거래들에 대한 개별 평가 (good/neutral/bad)
-4. **위험 경고**: 즉시 주의가 필요한 사항들
-5. **개선 제안**: 포트폴리오 개선을 위한 구체적인 제안
-
-[중요] 피드백 강도가 "${roastInfo.label}"이므로, ${roastInfo.description}을 제공해주세요.
-
-다음 JSON 형식으로만 응답해주세요:
-{
-  "overallScore": (0-10, 소수점 1자리),
-  "evaluation": "(한 줄 평가, 피드백 강도에 맞게)",
-  "riskLevel": "(낮음/중간/높음)",
-  "tradingFrequency": "(거래 빈도 분석 결과)",
-  "investmentStyleMatch": "(투자 성향 일치도 분석)",
-  "tradeEvaluations": [
-    { "hash": "(거래 해시 앞 10자)", "coin": "(코인 심볼)", "type": "(buy/sell)", "evaluation": "(good/neutral/bad)", "comment": "(짧은 코멘트)" }
-  ],
-  "portfolioAdvice": "(2-3문장의 종합 조언)",
-  "riskWarnings": ["(즉시 주의 필요 사항들)"],
-  "improvementSuggestions": ["(개선 제안들)"]
-}`;
+  // buildWalletAnalysisPrompt 사용
+  return buildWalletAnalysisPrompt({
+    walletAddress: input.walletAddress,
+    chainKey: input.chainKey,
+    portfolio: portfolioData,
+    trades: tradesData,
+    security: securityData,
+    userProfile: userProfileData,
+    feedbackLevel: userSettings.roastLevel,
+  });
 }
 
 /**
@@ -958,16 +958,22 @@ export async function callFlockAI(prompt: string): Promise<FlockAIAnalysisResult
     return null;
   }
 
+  const apiKey = process.env.FLOCK_API_KEY.trim();
+  console.log('[flock.io] API 호출 시작');
+  console.log('[flock.io] API 키 형식:', apiKey.startsWith('sk-') ? '올바름 (sk-...)' : `잘못됨 (${apiKey.substring(0, 5)}...)`);
+
   try {
+    // flock.io API 문서: https://docs.flock.io/flock-products/api-platform/api-endpoint
     const response = await fetch(FLOCK_API_URL, {
       method: 'POST',
       headers: {
-        'Accept': 'application/json',
+        'accept': 'application/json',
         'Content-Type': 'application/json',
-        'x-litellm-api-key': process.env.FLOCK_API_KEY,
+        'x-litellm-api-key': apiKey,
       },
       body: JSON.stringify({
         model: FLOCK_MODEL,
+        stream: false,
         messages: [
           {
             role: 'system',
@@ -984,7 +990,9 @@ export async function callFlockAI(prompt: string): Promise<FlockAIAnalysisResult
     });
 
     if (!response.ok) {
-      console.error(`flock.io API 오류: ${response.status}`);
+      const errorText = await response.text();
+      console.error(`[flock.io] API 오류: ${response.status}`);
+      console.error(`[flock.io] 응답 내용: ${errorText}`);
       return null;
     }
 
