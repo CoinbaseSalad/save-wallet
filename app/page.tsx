@@ -79,7 +79,7 @@ export default function Home() {
         </div>
       )}
       <div className="flex flex-col items-center justify-center flex-1 p-8">
-        <div className="card card-xl w-96 bg-base-100 shadow-sm">
+        <div className="card card-border card-xl w-96 bg-base-100 shadow-md">
           <div className="card-body items-center text-center">
             <h2 className="card-title">{minikitConfig.miniapp.name.toUpperCase()}</h2>
             {isBaseApp && (
@@ -88,8 +88,13 @@ export default function Home() {
                 {formatAddress(address)}
               </div>
             )}
-            <div className="text-center">
-              여기에 설명 넣기
+            <p className="text-base-content/70 text-sm leading-relaxed">
+              AI 기반 암호화폐 지갑 분석 도구
+            </p>
+            <div className="flex flex-wrap justify-center gap-2 mt-2">
+              <span className="badge badge-outline badge-sm">📊 건강도 분석</span>
+              <span className="badge badge-outline badge-sm">💰 자산 현황</span>
+              <span className="badge badge-outline badge-sm">🎯 맞춤 조언</span>
             </div>
             <div className="card-actions">
               <button

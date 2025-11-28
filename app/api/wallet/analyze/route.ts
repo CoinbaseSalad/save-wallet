@@ -9,6 +9,9 @@ import {
   PortfolioCoin,
   TokenTransfer,
   getAvgHoldingPeriodLabel,
+  callFlockAI,
+  buildFlockAIPrompt,
+  FlockAIAnalysisInput,
 } from '@/lib/moralis';
 import { isDemoWalletAddress } from '@/app/constants/settings';
 
@@ -360,17 +363,96 @@ export async function POST(request: NextRequest): Promise<NextResponse<AnalyzeRe
     const isDemoMode = USE_MOCK_DATA || isDemoWalletAddress(walletAddress || '');
 
     if (isDemoMode) {
-      console.log('[analyze] 데모 모드 활성화 - 가상 데이터 반환', {
+      console.log('[analyze] 데모 모드 활성화 - 목업 데이터 + 실제 AI 분석', {
         reason: USE_MOCK_DATA ? 'USE_MOCK_DATA=true' : '데모 지갑 주소',
         walletAddress,
       });
-      // 요청된 지갑 주소로 목업 데이터 업데이트
+
+      // 사용자 설정으로 AI 분석 수행 (매번 다른 결과)
+      const settings: UserSettings = {
+        investmentStyle: userSettings?.investmentStyle ?? 2,
+        livingExpenseRatio: userSettings?.livingExpenseRatio ?? 50,
+        investmentRatio: userSettings?.investmentRatio ?? 30,
+        roastLevel: userSettings?.roastLevel ?? 2,
+        locale: locale || 'ko',
+      };
+
+      // 목업 포트폴리오 데이터를 AI 분석용으로 변환
+      const mockPortfolioCoins: PortfolioCoin[] = (MOCK_RESPONSE.data?.portfolio.coins || []).map(coin => ({
+        symbol: coin.symbol,
+        name: coin.name,
+        logo: coin.logo,
+        amount: coin.amount,
+        value: coin.value,
+        price: coin.price,
+        change24h: coin.change24h,
+        allocation: coin.allocation,
+        riskLevel: 'safe' as const,
+      }));
+
+      // AI 분석용 입력 데이터 구성
+      const aiInput: FlockAIAnalysisInput = {
+        walletAddress: walletAddress || MOCK_RESPONSE.data?.walletAddress || '',
+        chainKey: chainKey || MOCK_RESPONSE.data?.chainKey || 'base',
+        walletData: {
+          totalValueUsd: MOCK_RESPONSE.data?.portfolio.totalValueUsd || 34000,
+          portfolioCoins: mockPortfolioCoins,
+          recentTransfers: [],
+          nativeBalance: {
+            symbol: 'ETH',
+            name: 'Ethereum',
+            balance: '5.2',
+            balanceFormatted: '5.2',
+            logo: 'https://assets.coingecko.com/coins/images/279/small/ethereum.png',
+            valueUsd: 17784,
+          },
+          summary: {
+            totalValueUsd: MOCK_RESPONSE.data?.portfolio.totalValueUsd || 34000,
+            totalTokens: mockPortfolioCoins.length,
+            transfersIn: 15,
+            transfersOut: 10,
+          },
+        },
+        tokenSecurityData: new Map(),
+        userSettings: settings,
+      };
+
+      // 실제 AI 분석 수행 (매번 다른 결과)
+      let aiAnalysis = null;
+      try {
+        const prompt = buildFlockAIPrompt(aiInput);
+        aiAnalysis = await callFlockAI(prompt);
+        console.log('[analyze] 데모 모드 AI 분석 완료');
+      } catch (error) {
+        console.error('[analyze] 데모 모드 AI 분석 실패:', error);
+      }
+
+      // AI 분석 결과를 목업 응답에 병합
       const mockResponse = {
         ...MOCK_RESPONSE,
         data: MOCK_RESPONSE.data ? {
           ...MOCK_RESPONSE.data,
           walletAddress: walletAddress || MOCK_RESPONSE.data.walletAddress,
           chainKey: chainKey || MOCK_RESPONSE.data.chainKey,
+          // AI 분석 결과가 있으면 사용, 없으면 목업 사용
+          aiEvaluation: aiAnalysis ? {
+            overallScore: aiAnalysis.overallScore,
+            evaluation: aiAnalysis.evaluation,
+            riskLevel: aiAnalysis.riskLevel,
+            tradingFrequency: aiAnalysis.tradingFrequency,
+            investmentStyleMatch: aiAnalysis.investmentStyleMatch,
+            portfolioAdvice: aiAnalysis.portfolioAdvice,
+            riskWarnings: aiAnalysis.riskWarnings || [],
+            improvementSuggestions: aiAnalysis.improvementSuggestions || [],
+          } : MOCK_RESPONSE.data.aiEvaluation,
+          // 거래 평가도 AI 결과 사용
+          recentTrades: aiAnalysis?.tradeEvaluations
+            ? MOCK_RESPONSE.data.recentTrades.map((trade, idx) => ({
+              ...trade,
+              evaluation: aiAnalysis.tradeEvaluations[idx]?.evaluation || trade.evaluation,
+              comment: aiAnalysis.tradeEvaluations[idx]?.comment || trade.comment,
+            }))
+            : MOCK_RESPONSE.data.recentTrades,
         } : undefined,
         timestamp,
       };
