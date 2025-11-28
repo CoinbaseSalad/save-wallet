@@ -18,7 +18,7 @@ export const minikitConfig = {
     name: "SaveWallet",
     subtitle: "Your AI Investment Assistant",
     description: "Investment",
-    screenshotUrls: [`${ROOT_URL}/screenshot-portrait.png`],
+    screenshotUrls: [`${ROOT_URL}/save-wallet-screenshot.png`],
     iconUrl: `${ROOT_URL}/save-wallet-icon.png`,
     splashImageUrl: `${ROOT_URL}/save-wallet-splash.png`,
     splashBackgroundColor: "#FFFFFF",
