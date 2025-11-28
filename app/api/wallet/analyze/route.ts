@@ -8,6 +8,7 @@ import {
   GoPlusTokenSecurity,
   PortfolioCoin,
   TokenTransfer,
+  getAvgHoldingPeriodLabel,
 } from '@/lib/moralis';
 
 // Node.js Runtime 사용 (Moralis SDK가 Edge Runtime과 호환되지 않음)
@@ -278,14 +279,6 @@ const MOCK_RESPONSE: AnalyzeResponse = {
   timestamp: new Date().toISOString(),
 };
 
-// 평균 보유 기간 계산
-function calculateAvgHoldingPeriod(transfers: TokenTransfer[]): string {
-  if (transfers.length === 0) return '데이터 없음';
-  if (transfers.length < 5) return '1주일 이상';
-  if (transfers.length < 15) return '2-5일';
-  if (transfers.length < 30) return '1-2일';
-  return '24시간 미만';
-}
 
 // 24시간 변동률 합계 계산
 function calculateTotalChange24h(coins: PortfolioCoin[]): { percent: number; value: number } {
@@ -503,7 +496,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<AnalyzeRe
           riskLevel: walletData.investmentMetrics.riskLevel,
           tradingFrequency: walletData.investmentMetrics.tradingFrequency,
           preferredCoins: walletData.investmentMetrics.preferredCoins,
-          avgHoldingPeriod: calculateAvgHoldingPeriod(walletData.recentTransfers),
+          avgHoldingPeriod: getAvgHoldingPeriodLabel(walletData.recentTransfers.length, settings.locale),
           diversificationScore: walletData.investmentMetrics.diversificationScore,
         },
       },

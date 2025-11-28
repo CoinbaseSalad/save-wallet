@@ -216,22 +216,42 @@ export async function getRecentTokenTransfers(
 
     return response.result.map((transfer) => {
       const isIncoming = transfer.toAddress?.lowercase === address.toLowerCase();
-      // Moralis API 응답 타입에서 필드 접근 (타입 안전하게 처리)
-      const transferData = transfer as unknown as {
-        tokenSymbol?: string;
-        tokenName?: string;
-        valueDecimal?: string;
-        tokenDecimals?: number;
-        transactionHash?: string;
-        fromAddress?: { lowercase: string };
-        toAddress?: { lowercase: string };
-        address?: { lowercase: string };
-        value?: { toString: () => string };
-        blockTimestamp?: { toISOString: () => string };
-      };
 
-      const tokenSymbol = transferData.tokenSymbol || 'UNKNOWN';
-      const tokenAddress = transferData.address?.lowercase || '';
+      // Moralis SDK는 Erc20Transaction 객체를 반환
+      // SDK 클래스의 직접 속성 사용 + 내부 _data에서 추가 필드 접근
+      const transactionHash = transfer.transactionHash || '';
+      const fromAddr = transfer.fromAddress?.lowercase || '';
+      const toAddr = transfer.toAddress?.lowercase || '';
+      const tokenAddress = transfer.address?.lowercase || '';
+      const rawValue = transfer.value?.toString() || '0';
+      const blockTimestamp = transfer.blockTimestamp?.toISOString() || '';
+
+      // SDK의 result 또는 내부 데이터에서 토큰 정보 추출
+      // Moralis SDK는 raw JSON의 token_symbol을 toCamelCase로 변환하여 _data에 저장
+      const internalData = (transfer as unknown as {
+        _data?: {
+          tokenSymbol?: string;
+          tokenName?: string;
+          valueDecimal?: string;
+          tokenDecimals?: number;
+        }
+      })._data;
+
+      // toJSON()을 통해 직렬화된 데이터 접근 시도
+      const jsonData = typeof transfer.toJSON === 'function'
+        ? transfer.toJSON() as {
+          tokenSymbol?: string;
+          tokenName?: string;
+          valueDecimal?: string;
+          tokenDecimals?: number;
+        }
+        : null;
+
+      // 우선순위: 내부 _data → toJSON() → 기본값
+      const tokenSymbol = internalData?.tokenSymbol || jsonData?.tokenSymbol || 'UNKNOWN';
+      const tokenName = internalData?.tokenName || jsonData?.tokenName || 'Unknown Token';
+      const valueDecimal = internalData?.valueDecimal || jsonData?.valueDecimal || '0';
+      const tokenDecimals = internalData?.tokenDecimals || jsonData?.tokenDecimals || 18;
 
       const tokenLogo = getTokenLogo({
         logo: null,
@@ -241,17 +261,17 @@ export async function getRecentTokenTransfers(
       });
 
       return {
-        hash: transferData.transactionHash || '',
-        from: transferData.fromAddress?.lowercase || '',
-        to: transferData.toAddress?.lowercase || '',
+        hash: transactionHash,
+        from: fromAddr,
+        to: toAddr,
         tokenSymbol,
-        tokenName: transferData.tokenName || 'Unknown Token',
+        tokenName,
         tokenAddress,
         tokenLogo,
-        value: transferData.value?.toString() || '0',
-        valueFormatted: transferData.valueDecimal || '0',
-        decimals: transferData.tokenDecimals || 18,
-        blockTimestamp: transferData.blockTimestamp?.toISOString() || '',
+        value: rawValue,
+        valueFormatted: valueDecimal,
+        decimals: tokenDecimals,
+        blockTimestamp,
         direction: isIncoming ? 'in' : 'out',
       };
     });
@@ -457,10 +477,12 @@ export async function getWalletPortfolio(
  * 홈 화면에서 사용할 모든 데이터를 한 번에 조회
  * @param address 지갑 주소
  * @param chainKey 체인 키
+ * @param locale 출력 언어
  */
 export async function analyzeWalletData(
   address: string,
-  chainKey: string = 'base'
+  chainKey: string = 'base',
+  locale?: string
 ): Promise<{
   portfolio: {
     nativeBalance: NativeBalance;
@@ -501,8 +523,8 @@ export async function analyzeWalletData(
   const diversificationScore = Math.min(portfolio.portfolioCoins.length / 10, 1) * 100;
 
   const investmentMetrics = {
-    riskLevel: getOverallRiskLevel(portfolio.portfolioCoins),
-    tradingFrequency: getTradingFrequencyLabel(tradingCount),
+    riskLevel: getOverallRiskLevel(portfolio.portfolioCoins, locale),
+    tradingFrequency: getTradingFrequencyLabel(tradingCount, locale),
     diversificationScore: Math.round(diversificationScore),
     preferredCoins: uniqueCoins.slice(0, 5),
   };
@@ -524,6 +546,37 @@ export async function analyzeWalletData(
 const STABLE_COINS = ['USDT', 'USDC', 'DAI', 'BUSD', 'TUSD', 'FRAX', 'USDP'];
 const MAJOR_COINS = ['BTC', 'WBTC', 'ETH', 'WETH'];
 const MEME_COINS = ['DOGE', 'SHIB', 'PEPE', 'FLOKI', 'BONK', 'WIF', 'WOJAK', 'MEME'];
+
+// 다국어 번역 테이블
+type LocaleKey = 'ko' | 'en' | 'ja' | 'zh';
+
+const TRANSLATIONS: Record<string, Record<LocaleKey, string>> = {
+  // 위험도 레벨
+  riskLow: { ko: '낮음', en: 'Low', ja: '低', zh: '低' },
+  riskMedium: { ko: '중간', en: 'Medium', ja: '中', zh: '中' },
+  riskHigh: { ko: '높음', en: 'High', ja: '高', zh: '高' },
+  noData: { ko: '데이터 없음', en: 'No data', ja: 'データなし', zh: '无数据' },
+  // 거래 빈도
+  freqDaily: { ko: '매일', en: 'Daily', ja: '毎日', zh: '每天' },
+  freq3to5: { ko: '주 3-5회', en: '3-5 times/week', ja: '週3-5回', zh: '每周3-5次' },
+  freq1to2: { ko: '주 1-2회', en: '1-2 times/week', ja: '週1-2回', zh: '每周1-2次' },
+  freqMonthly: { ko: '월 1-2회', en: '1-2 times/month', ja: '月1-2回', zh: '每月1-2次' },
+  freqNone: { ko: '거래 없음', en: 'No trades', ja: '取引なし', zh: '无交易' },
+  // 보유 기간
+  holdWeekPlus: { ko: '1주일 이상', en: '1+ weeks', ja: '1週間以上', zh: '1周以上' },
+  hold2to5days: { ko: '2-5일', en: '2-5 days', ja: '2-5日', zh: '2-5天' },
+  hold1to2days: { ko: '1-2일', en: '1-2 days', ja: '1-2日', zh: '1-2天' },
+  holdUnder24h: { ko: '24시간 미만', en: 'Under 24h', ja: '24時間未満', zh: '不到24小时' },
+};
+
+/**
+ * 번역된 텍스트 반환
+ */
+export function t(key: string, locale?: string): string {
+  const normalizedLocale = (locale?.toLowerCase() || 'ko') as LocaleKey;
+  const validLocale = ['ko', 'en', 'ja', 'zh'].includes(normalizedLocale) ? normalizedLocale : 'ko';
+  return TRANSLATIONS[key]?.[validLocale] || TRANSLATIONS[key]?.['ko'] || key;
+}
 
 /**
  * 개별 토큰 위험도 레벨 계산 (로컬 폴백)
@@ -549,28 +602,39 @@ export function getTokenRiskLevel(
  * 전체 포트폴리오 위험도 계산 (로컬 폴백)
  * 실제 점수는 flock.io AI를 통해 계산됨
  */
-export function getOverallRiskLevel(coins: PortfolioCoin[]): string {
-  if (coins.length === 0) return '데이터 없음';
+export function getOverallRiskLevel(coins: PortfolioCoin[], locale?: string): string {
+  if (coins.length === 0) return t('noData', locale);
 
   const stableCoins = [...STABLE_COINS, ...MAJOR_COINS];
   const stableAllocation = coins
     .filter((c) => stableCoins.includes(c.symbol.toUpperCase()))
     .reduce((sum, c) => sum + c.allocation, 0);
 
-  if (stableAllocation >= 70) return '낮음';
-  if (stableAllocation >= 40) return '중간';
-  return '높음';
+  if (stableAllocation >= 70) return t('riskLow', locale);
+  if (stableAllocation >= 40) return t('riskMedium', locale);
+  return t('riskHigh', locale);
 }
 
 /**
  * 거래 빈도 레이블 반환
  */
-export function getTradingFrequencyLabel(count: number): string {
-  if (count >= 20) return '매일';
-  if (count >= 10) return '주 3-5회';
-  if (count >= 5) return '주 1-2회';
-  if (count > 0) return '월 1-2회';
-  return '거래 없음';
+export function getTradingFrequencyLabel(count: number, locale?: string): string {
+  if (count >= 20) return t('freqDaily', locale);
+  if (count >= 10) return t('freq3to5', locale);
+  if (count >= 5) return t('freq1to2', locale);
+  if (count > 0) return t('freqMonthly', locale);
+  return t('freqNone', locale);
+}
+
+/**
+ * 평균 보유 기간 레이블 반환
+ */
+export function getAvgHoldingPeriodLabel(transferCount: number, locale?: string): string {
+  if (transferCount === 0) return t('noData', locale);
+  if (transferCount < 5) return t('holdWeekPlus', locale);
+  if (transferCount < 15) return t('hold2to5days', locale);
+  if (transferCount < 30) return t('hold1to2days', locale);
+  return t('holdUnder24h', locale);
 }
 
 // ============================================
@@ -1042,8 +1106,8 @@ export async function performWalletAnalysis(
   securityData: Map<string, GoPlusTokenSecurity>;
   aiAnalysis: FlockAIAnalysisResult | null;
 }> {
-  // 1. Moralis에서 지갑 데이터 조회
-  const walletData = await analyzeWalletData(walletAddress, chainKey);
+  // 1. Moralis에서 지갑 데이터 조회 (locale 전달)
+  const walletData = await analyzeWalletData(walletAddress, chainKey, userSettings.locale);
 
   // 2. GoPlus에서 토큰 보안 정보 조회
   const contractAddresses = walletData.portfolio.tokenBalances

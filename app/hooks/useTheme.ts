@@ -14,7 +14,7 @@ export function useTheme() {
   useEffect(() => {
     const savedTheme = localStorage.getItem(THEME_STORAGE_KEY) as Theme | null;
     let initialTheme: Theme;
-    
+
     if (savedTheme) {
       initialTheme = savedTheme;
     } else {
@@ -22,12 +22,12 @@ export function useTheme() {
       const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
       initialTheme = prefersDark ? "night" : "light";
     }
-    
+
     setThemeState(initialTheme);
     document.documentElement.setAttribute("data-theme", initialTheme);
     // 브라우저 강제 다크모드 방지
     document.documentElement.style.colorScheme = initialTheme === "night" ? "dark" : "light";
-    
+
     setMounted(true);
   }, []);
 
