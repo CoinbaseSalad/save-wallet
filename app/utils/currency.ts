@@ -1,6 +1,6 @@
 'use client';
 
-import { type Locale, localeCurrencies, exchangeRates } from '@/i18n/routing';
+import { type Locale, localeCurrencies, defaultExchangeRates } from '@/i18n/routing';
 
 /**
  * USD 금액을 현재 로케일의 통화로 변환하여 포맷팅합니다.
@@ -17,13 +17,18 @@ export function formatCurrency(
     minimumFractionDigits?: number;
     maximumFractionDigits?: number;
     compact?: boolean;
+    /** 동적 환율 (useExchangeRate 훅에서 제공) */
+    exchangeRates?: Record<string, number>;
   }
 ): string {
   const amount = typeof amountUsd === 'string' ? parseFloat(amountUsd) : amountUsd;
   if (isNaN(amount)) return '0';
 
   const currencyConfig = localeCurrencies[locale];
-  const exchangeRate = exchangeRates[currencyConfig.currency];
+
+  // 동적 환율이 제공되면 사용, 아니면 기본값 사용
+  const rates = options?.exchangeRates || defaultExchangeRates;
+  const exchangeRate = rates[currencyConfig.currency] || defaultExchangeRates[currencyConfig.currency];
   const convertedAmount = amount * exchangeRate;
 
   const {
@@ -124,4 +129,3 @@ export function getCurrencySymbol(locale: Locale): string {
 export function getCurrencyCode(locale: Locale): string {
   return localeCurrencies[locale].currency;
 }
-

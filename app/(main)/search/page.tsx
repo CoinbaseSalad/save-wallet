@@ -5,6 +5,7 @@ import { Search, Wallet, TrendingUp, TrendingDown, ArrowUpRight, ArrowDownRight,
 import { useTranslations } from "next-intl";
 import { useUserSettings } from "@/app/hooks/useUserSettings";
 import { useLocaleSettings } from "@/app/hooks/useLocaleSettings";
+import { useExchangeRate } from "@/app/hooks/useExchangeRate";
 import { useWalletSearchMutation, useCachedWalletAnalysis } from "@/app/hooks/useWalletQuery";
 import { formatCurrency, formatNumber, formatPercent } from "@/app/utils/currency";
 import AnalyzingModal from "@/app/components/AnalyzingModal";
@@ -89,6 +90,7 @@ const SearchResultSkeleton = () => (
 export default function SearchPage() {
   const { settings } = useUserSettings();
   const { locale } = useLocaleSettings();
+  const { rates: exchangeRates } = useExchangeRate();
   const t = useTranslations("search");
   const tHome = useTranslations("home");
   const tError = useTranslations("error");
@@ -441,7 +443,7 @@ export default function SearchPage() {
                                       </span>
                                     </div>
                                     <div className="text-xs text-base-content/70">
-                                      {formatNumber(trade.amount, locale as Locale, 6)} {trade.coin} @ {formatCurrency(trade.price, locale as Locale)}
+                                      {formatNumber(trade.amount, locale as Locale, 6)} {trade.coin} @ {formatCurrency(trade.price, locale as Locale, { exchangeRates })}
                                     </div>
                                     {trade.comment && (
                                       <div className="text-xs mt-1 italic text-base-content/60">
@@ -491,7 +493,7 @@ export default function SearchPage() {
                     <div className="stats bg-base-100 shadow">
                       <div className="stat">
                         <div className="stat-title">{tHome("totalValue")}</div>
-                        <div className="stat-value text-primary">{formatCurrency(totalValue, locale as Locale)}</div>
+                        <div className="stat-value text-primary">{formatCurrency(totalValue, locale as Locale, { exchangeRates })}</div>
                         <div className={`stat-desc flex items-center gap-1 ${totalChange24h >= 0 ? "text-success" : "text-error"}`}>
                           {totalChange24h >= 0 ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
                           {tHome("dayChange")} {formatPercent(totalChange24h, locale as Locale)}
@@ -532,7 +534,7 @@ export default function SearchPage() {
                                   </span>
                                 </div>
                                 <div className="text-right">
-                                  <div className="font-semibold">{formatCurrency(asset.value, locale as Locale)}</div>
+                                  <div className="font-semibold">{formatCurrency(asset.value, locale as Locale, { exchangeRates })}</div>
                                   <div
                                     className={`text-xs flex items-center gap-1 ${asset.change24h >= 0 ? "text-success" : "text-error"
                                       }`}

@@ -5,6 +5,7 @@ import { TrendingUp, TrendingDown, AlertTriangle, AlertCircle, ExternalLink, Wal
 import { useAccount } from "wagmi";
 import { useTranslations } from "next-intl";
 import { useLocaleSettings } from "@/app/hooks/useLocaleSettings";
+import { useExchangeRate } from "@/app/hooks/useExchangeRate";
 import { useWalletAssets, useInvalidateWalletCache } from "@/app/hooks/useWalletQuery";
 import { formatCurrency, formatNumber, formatPercent } from "@/app/utils/currency";
 import AnalyzingModal from "@/app/components/AnalyzingModal";
@@ -108,6 +109,7 @@ const INITIAL_SOURCES_COUNT = 3;
 export default function AssetPage() {
   const { address, isConnected } = useAccount();
   const { locale } = useLocaleSettings();
+  const { rates: exchangeRates } = useExchangeRate();
   const tAsset = useTranslations("asset");
   const tWallet = useTranslations("wallet");
   const tError = useTranslations("error");
@@ -244,10 +246,10 @@ export default function AssetPage() {
           <div className="stats bg-base-100 shadow w-full">
             <div className="stat">
               <div className="stat-title">{tAsset("totalValue")}</div>
-              <div className="stat-value text-primary">{formatCurrency(summary.totalValueUsd, locale as Locale)}</div>
+              <div className="stat-value text-primary">{formatCurrency(summary.totalValueUsd, locale as Locale, { exchangeRates })}</div>
               <div className={`stat-desc flex items-center gap-1 ${summary.totalChange24h >= 0 ? "text-success" : "text-error"}`}>
                 {summary.totalChange24h >= 0 ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
-                {formatPercent(summary.totalChange24h, locale as Locale)} ({formatCurrency(Math.abs(summary.totalChangeValue), locale as Locale)})
+                {formatPercent(summary.totalChange24h, locale as Locale)} ({formatCurrency(Math.abs(summary.totalChangeValue), locale as Locale, { exchangeRates })})
               </div>
             </div>
             <div className="stat">
@@ -349,7 +351,7 @@ export default function AssetPage() {
                         <p className="text-xs text-base-content/60">{coin.name}</p>
                       </div>
                       <div className="text-right">
-                        <div className="font-bold text-lg">{formatCurrency(coin.value, locale as Locale)}</div>
+                        <div className="font-bold text-lg">{formatCurrency(coin.value, locale as Locale, { exchangeRates })}</div>
                         <div className={`text-xs flex items-center justify-end gap-1 ${coin.change24h >= 0 ? "text-success" : "text-error"}`}>
                           {coin.change24h >= 0 ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
                           {formatPercent(coin.change24h, locale as Locale)}
@@ -360,7 +362,7 @@ export default function AssetPage() {
                     {/* 보유량 및 가격 */}
                     <div className="flex items-center justify-between mt-2 text-sm text-base-content/70">
                       <span>{tAsset("amount")}: {formatNumber(coin.amount, locale as Locale, 6)} {coin.symbol}</span>
-                      <span>{formatCurrency(coin.price, locale as Locale)}</span>
+                      <span>{formatCurrency(coin.price, locale as Locale, { exchangeRates })}</span>
                     </div>
                   </div>
                 </div>

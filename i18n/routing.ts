@@ -50,11 +50,17 @@ export const localeCurrencies: Record<Locale, CurrencyConfig> = {
   ja: { currency: 'JPY', symbol: '¥', locale: 'ja-JP' },
 };
 
-// 환율 (USD 기준) - 실제 앱에서는 API로 실시간 환율을 가져와야 합니다
-export const exchangeRates: Record<string, number> = {
+// 기본 환율 (USD 기준) - API 실패 시 폴백용
+// 실시간 환율은 useExchangeRate 훅을 통해 가져옵니다.
+// @see app/hooks/useExchangeRate.ts
+export const defaultExchangeRates: Record<string, number> = {
   USD: 1,
   KRW: 1380,
   CNY: 7.25,
   JPY: 155,
 };
+
+// 하위 호환성을 위해 exchangeRates도 export (deprecated)
+/** @deprecated useExchangeRate 훅을 사용하세요 */
+export const exchangeRates = defaultExchangeRates;
 
