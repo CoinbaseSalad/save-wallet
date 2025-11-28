@@ -37,6 +37,7 @@ const getEvaluationBadge = (evaluation: string) => {
 };
 
 const INITIAL_TRADES_COUNT = 4;
+const INITIAL_COINS_COUNT = 5;
 
 // 숫자를 소수점 2자리까지 포맷팅 (불필요한 0 제거)
 const formatNumber = (num: number | string): string => {
@@ -109,6 +110,7 @@ export default function HomePage() {
   
   // UI 상태
   const [isExpanded, setIsExpanded] = useState(false);
+  const [isCoinsExpanded, setIsCoinsExpanded] = useState(false);
   const dateRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
   // 평가 텍스트 (번역)
@@ -510,7 +512,7 @@ export default function HomePage() {
             <>
             {/* 자산 배분 */}
             <div className="space-y-3 mt-4">
-              {portfolio.coins.map((asset) => (
+              {(isCoinsExpanded ? portfolio.coins : portfolio.coins.slice(0, INITIAL_COINS_COUNT)).map((asset) => (
                 <div key={asset.symbol} className="bg-base-100 p-3 rounded-lg">
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2">
@@ -547,6 +549,27 @@ export default function HomePage() {
                   </div>
                 </div>
               ))}
+              
+              {/* 확장/축소 버튼 */}
+              {portfolio.coins.length > INITIAL_COINS_COUNT && (
+                <button
+                  className="btn btn-ghost btn-sm w-full"
+                  onClick={() => setIsCoinsExpanded(!isCoinsExpanded)}
+                >
+                  {isCoinsExpanded ? (
+                    <>
+                      <ChevronUp className="w-4 h-4" />
+                      {t("collapse")}
+                    </>
+                  ) : (
+                    <>
+                      <ChevronDown className="w-4 h-4" />
+                      {portfolio.coins.length - INITIAL_COINS_COUNT}{t("showMore")}
+                    </>
+                  )}
+                </button>
+              )}
+              
               {/* 코인 개수 표시 */}
               <div className="text-right">
                 <span className="text-xs text-base-content/50">{t("totalCoins", { count: portfolio.coins.length })}</span>
