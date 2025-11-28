@@ -142,9 +142,9 @@ export function useWalletSearchMutation() {
  */
 export function useCachedWalletAnalysis(address: string | null, chainKey: string) {
   const queryClient = useQueryClient();
-  
+
   if (!address) return null;
-  
+
   return queryClient.getQueryData<AnalyzeResponseData>(
     walletKeys.analyzeByAddress(address, chainKey)
   );
