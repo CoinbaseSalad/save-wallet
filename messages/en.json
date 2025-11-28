@@ -38,6 +38,7 @@
     "title": "Settings",
     "description": "Change settings used for investment evaluation",
     "saveChanges": "Save Changes",
+    "cancel": "Cancel",
     "saving": "Saving...",
     "saved": "Settings saved!",
     "saveFailed": "Failed to save settings.",

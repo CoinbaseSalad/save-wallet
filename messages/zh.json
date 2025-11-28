@@ -38,6 +38,7 @@
     "title": "设置",
     "description": "更改用于投资评估的设置",
     "saveChanges": "保存更改",
+    "cancel": "取消",
     "saving": "保存中...",
     "saved": "设置已保存！",
     "saveFailed": "保存设置失败。",

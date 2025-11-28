@@ -102,12 +102,12 @@ export default function HomePage() {
   const tWallet = useTranslations("wallet");
   const tError = useTranslations("error");
   const tCommon = useTranslations("common");
-  
+
   // API 데이터 상태
   const [data, setData] = useState<AnalyzeResponseData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  
+
   // UI 상태
   const [isExpanded, setIsExpanded] = useState(false);
   const [isCoinsExpanded, setIsCoinsExpanded] = useState(false);
@@ -302,7 +302,7 @@ export default function HomePage() {
               <Activity className="w-5 h-5 text-primary" />
               {t("walletHealth")}
             </h2>
-            <button 
+            <button
               className="btn btn-ghost btn-sm btn-circle"
               onClick={fetchAnalysis}
               disabled={isLoading}
@@ -374,106 +374,106 @@ export default function HomePage() {
           ) : (
             <>
 
-            {/* 날짜별 거래 횟수 뱃지 - 월/일 2행 분리 */}
-            {Object.keys(datesByMonth).length > 0 && (
-              <div className="w-full mt-2 flex divide-x divide-base-content/20">
-                {Object.entries(datesByMonth).map(([month, dates]) => (
-                  <div key={month} className="flex-1 flex flex-col items-center gap-1 px-2">
-                    {/* 월 라벨 */}
-                    <span className="text-xs text-base-content/60 font-medium">{month}월</span>
-                    {/* 일자 버튼 */}
-                    <div className="flex gap-1 justify-center flex-wrap">
-                      {dates.map(({ date, day, count }) => (
-                        <button
-                          key={date}
-                          className="btn btn-xs btn-ghost gap-0.5 px-2 hover:btn-primary transition-colors"
-                          onClick={() => scrollToDate(date)}
-                        >
-                          {day}
-                          <span className="badge badge-xs badge-primary">{count}</span>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {/* Chat Bubbles 스타일 거래 내역 */}
-            <div className="space-y-1 mt-4">
-              {displayedTrades.map((trade, index) => {
-                const prevTrade = displayedTrades[index - 1];
-                const showDateDivider = !prevTrade || prevTrade.date !== trade.date;
-
-                return (
-                  <div key={trade.hash}>
-                    {/* 날짜 구분선 */}
-                    {showDateDivider && (
-                      <div
-                        ref={(el) => { dateRefs.current[trade.date] = el; }}
-                        className="divider text-xs text-base-content/50 my-3"
-                      >
-                        {trade.date}
+              {/* 날짜별 거래 횟수 뱃지 - 월/일 2행 분리 */}
+              {Object.keys(datesByMonth).length > 0 && (
+                <div className="w-full mt-2 flex divide-x divide-base-content/20">
+                  {Object.entries(datesByMonth).map(([month, dates]) => (
+                    <div key={month} className="flex-1 flex flex-col items-center gap-1 px-2">
+                      {/* 월 라벨 */}
+                      <span className="text-xs text-base-content/60 font-medium">{month}월</span>
+                      {/* 일자 버튼 */}
+                      <div className="flex gap-1 justify-center flex-wrap">
+                        {dates.map(({ date, day, count }) => (
+                          <button
+                            key={date}
+                            className="btn btn-xs btn-ghost gap-0.5 px-2 hover:btn-primary transition-colors"
+                            onClick={() => scrollToDate(date)}
+                          >
+                            {day}
+                            <span className="badge badge-xs badge-primary">{count}</span>
+                          </button>
+                        ))}
                       </div>
-                    )}
+                    </div>
+                  ))}
+                </div>
+              )}
 
-                    {/* 채팅 버블 스타일 거래 카드 */}
-                    <div className={`chat ${trade.type === "buy" ? "chat-start" : "chat-end"}`}>
-                      <div className="chat-image">
-                        <div className={`w-8 h-8 rounded-full flex items-center justify-center ${trade.type === "buy" ? "bg-success/20" : "bg-error/20"
-                          }`}>
-                          {trade.type === "buy" ? (
-                            <ArrowUpRight className="w-4 h-4 text-success" />
-                          ) : (
-                            <ArrowDownRight className="w-4 h-4 text-error" />
+              {/* Chat Bubbles 스타일 거래 내역 */}
+              <div className="space-y-1 mt-4">
+                {displayedTrades.map((trade, index) => {
+                  const prevTrade = displayedTrades[index - 1];
+                  const showDateDivider = !prevTrade || prevTrade.date !== trade.date;
+
+                  return (
+                    <div key={trade.hash}>
+                      {/* 날짜 구분선 */}
+                      {showDateDivider && (
+                        <div
+                          ref={(el) => { dateRefs.current[trade.date] = el; }}
+                          className="divider text-xs text-base-content/50 my-3"
+                        >
+                          {trade.date}
+                        </div>
+                      )}
+
+                      {/* 채팅 버블 스타일 거래 카드 */}
+                      <div className={`chat ${trade.type === "buy" ? "chat-start" : "chat-end"}`}>
+                        <div className="chat-image">
+                          <div className={`w-8 h-8 rounded-full flex items-center justify-center ${trade.type === "buy" ? "bg-success/20" : "bg-error/20"
+                            }`}>
+                            {trade.type === "buy" ? (
+                              <ArrowUpRight className="w-4 h-4 text-success" />
+                            ) : (
+                              <ArrowDownRight className="w-4 h-4 text-error" />
+                            )}
+                          </div>
+                        </div>
+                        <div className={`chat-bubble ${trade.type === "buy" ? "bg-success/10" : "bg-error/10"
+                          } text-base-content`}>
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="font-bold">{trade.coin}</span>
+                            <span className={`badge badge-xs ${trade.type === "buy" ? "badge-success" : "badge-error"}`}>
+                              {trade.type === "buy" ? t("buy") : t("sell")}
+                            </span>
+                            <span className={`badge badge-xs ${getEvaluationBadge(trade.evaluation)}`}>
+                              {getEvaluationText(trade.evaluation)}
+                            </span>
+                          </div>
+                          <div className="text-xs text-base-content/70">
+                            {formatNumber(trade.amount)} {trade.coin} @ ${formatNumber(trade.price)}
+                          </div>
+                          {trade.comment && (
+                            <div className="text-xs mt-1 italic text-base-content/60">
+                              💡 {trade.comment}
+                            </div>
                           )}
                         </div>
                       </div>
-                      <div className={`chat-bubble ${trade.type === "buy" ? "bg-success/10" : "bg-error/10"
-                        } text-base-content`}>
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className="font-bold">{trade.coin}</span>
-                          <span className={`badge badge-xs ${trade.type === "buy" ? "badge-success" : "badge-error"}`}>
-                            {trade.type === "buy" ? t("buy") : t("sell")}
-                          </span>
-                          <span className={`badge badge-xs ${getEvaluationBadge(trade.evaluation)}`}>
-                            {getEvaluationText(trade.evaluation)}
-                          </span>
-                        </div>
-                        <div className="text-xs text-base-content/70">
-                          {formatNumber(trade.amount)} {trade.coin} @ ${formatNumber(trade.price)}
-                        </div>
-                        {trade.comment && (
-                          <div className="text-xs mt-1 italic text-base-content/60">
-                            💡 {trade.comment}
-                          </div>
-                        )}
-                      </div>
                     </div>
-                  </div>
-                );
-              })}
-            </div>
+                  );
+                })}
+              </div>
 
-            {/* 확장/축소 버튼 */}
-            {hasMoreTrades && (
-              <button
-                className="btn btn-ghost btn-sm w-full mt-2"
-                onClick={() => setIsExpanded(!isExpanded)}
-              >
-                {isExpanded ? (
-                  <>
-                    <ChevronUp className="w-4 h-4" />
-                    {t("collapse")}
-                  </>
-                ) : (
-                  <>
-                    <ChevronDown className="w-4 h-4" />
-                    {recentTrades.length - INITIAL_TRADES_COUNT}{t("showMore")}
-                  </>
-                )}
-              </button>
-            )}
+              {/* 확장/축소 버튼 */}
+              {hasMoreTrades && (
+                <button
+                  className="btn btn-ghost btn-sm w-full mt-2"
+                  onClick={() => setIsExpanded(!isExpanded)}
+                >
+                  {isExpanded ? (
+                    <>
+                      <ChevronUp className="w-4 h-4" />
+                      {t("collapse")}
+                    </>
+                  ) : (
+                    <>
+                      <ChevronDown className="w-4 h-4" />
+                      {recentTrades.length - INITIAL_TRADES_COUNT}{t("showMore")}
+                    </>
+                  )}
+                </button>
+              )}
             </>
           )}
         </div>
@@ -510,122 +510,121 @@ export default function HomePage() {
             </div>
           ) : (
             <>
-            {/* 자산 배분 */}
-            <div className="space-y-3 mt-4">
-              {(isCoinsExpanded ? portfolio.coins : portfolio.coins.slice(0, INITIAL_COINS_COUNT)).map((asset) => (
-                <div key={asset.symbol} className="bg-base-100 p-3 rounded-lg">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-2">
-                      {asset.logo && (
-                        <img 
-                          src={asset.logo} 
-                          alt={asset.symbol} 
-                          className="w-6 h-6 rounded-full"
-                          onError={(e) => {
-                            e.currentTarget.style.display = 'none';
-                          }}
-                        />
-                      )}
-                      <span className="font-bold">{asset.symbol}</span>
-                      <span className="text-xs text-base-content/60">
-                        {formatNumber(asset.amount)} {asset.symbol}
-                      </span>
+              {/* 자산 배분 */}
+              <div className="space-y-3 mt-4">
+                {(isCoinsExpanded ? portfolio.coins : portfolio.coins.slice(0, INITIAL_COINS_COUNT)).map((asset) => (
+                  <div key={asset.symbol} className="bg-base-100 p-3 rounded-lg">
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-2">
+                        {asset.logo && (
+                          <img
+                            src={asset.logo}
+                            alt={asset.symbol}
+                            className="w-6 h-6 rounded-full"
+                            onError={(e) => {
+                              e.currentTarget.style.display = 'none';
+                            }}
+                          />
+                        )}
+                        <span className="font-bold">{asset.symbol}</span>
+                        <span className="text-xs text-base-content/60">
+                          {formatNumber(asset.amount)} {asset.symbol}
+                        </span>
+                      </div>
+                      <div className="text-right">
+                        <div className="font-semibold">${formatNumber(asset.value)}</div>
+                        <div className={`text-xs flex items-center gap-1 ${asset.change24h >= 0 ? "text-success" : "text-error"}`}>
+                          {asset.change24h >= 0 ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
+                          {asset.change24h >= 0 ? "+" : ""}{formatNumber(asset.change24h)}%
+                        </div>
+                      </div>
                     </div>
-                    <div className="text-right">
-                      <div className="font-semibold">${formatNumber(asset.value)}</div>
-                      <div className={`text-xs flex items-center gap-1 ${asset.change24h >= 0 ? "text-success" : "text-error"}`}>
-                        {asset.change24h >= 0 ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
-                        {asset.change24h >= 0 ? "+" : ""}{formatNumber(asset.change24h)}%
+                    <div className="flex items-center gap-2">
+                      <progress
+                        className={`progress ${asset.allocation >= 40 ? "progress-primary" : asset.allocation >= 20 ? "progress-secondary" : "progress-accent"} flex-1`}
+                        value={asset.allocation}
+                        max="100"
+                      />
+                      <span className="text-xs text-base-content/60 w-10 text-right">{formatNumber(asset.allocation)}%</span>
+                    </div>
+                  </div>
+                ))}
+
+                {/* 확장/축소 버튼 */}
+                {portfolio.coins.length > INITIAL_COINS_COUNT && (
+                  <button
+                    className="btn btn-ghost btn-sm w-full"
+                    onClick={() => setIsCoinsExpanded(!isCoinsExpanded)}
+                  >
+                    {isCoinsExpanded ? (
+                      <>
+                        <ChevronUp className="w-4 h-4" />
+                        {t("collapse")}
+                      </>
+                    ) : (
+                      <>
+                        <ChevronDown className="w-4 h-4" />
+                        {portfolio.coins.length - INITIAL_COINS_COUNT}{t("showMore")}
+                      </>
+                    )}
+                  </button>
+                )}
+
+                {/* 코인 개수 표시 */}
+                <div className="text-right">
+                  <span className="text-xs text-base-content/50">{t("totalCoins", { count: portfolio.coins.length })}</span>
+                </div>
+              </div>
+
+              {/* 투자 성향 */}
+              {investStyle && (
+                <>
+                  <div className="divider">{t("investStyleAnalysis")}</div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="bg-base-100 p-3 rounded-lg text-center">
+                      <div className="text-xs text-base-content/60 mb-1">{t("riskLevel")}</div>
+                      <div className={`badge badge-lg ${investStyle.riskLevel === '높음' ? 'badge-error' :
+                          investStyle.riskLevel === '중간' ? 'badge-warning' : 'badge-success'
+                        }`}>
+                        {investStyle.riskLevel}
+                      </div>
+                    </div>
+                    <div className="bg-base-100 p-3 rounded-lg text-center">
+                      <div className="text-xs text-base-content/60 mb-1">{t("tradingFrequency")}</div>
+                      <div className="text-sm font-semibold">{investStyle.tradingFrequency}</div>
+                    </div>
+                    <div className="bg-base-100 p-3 rounded-lg text-center">
+                      <div className="text-xs text-base-content/60 mb-1">{t("avgHoldingPeriod")}</div>
+                      <div className="text-sm font-semibold">{investStyle.avgHoldingPeriod}</div>
+                    </div>
+                    <div className="bg-base-100 p-3 rounded-lg text-center">
+                      <div className="text-xs text-base-content/60 mb-1">{t("preferredCoins")}</div>
+                      <div className="flex gap-1 justify-center flex-wrap">
+                        {investStyle.preferredCoins && investStyle.preferredCoins.length > 0 ? (
+                          investStyle.preferredCoins.slice(0, 3).map((coin) => (
+                            <span key={coin} className="badge badge-sm badge-outline">{coin}</span>
+                          ))
+                        ) : (
+                          <span className="text-xs text-base-content/40">{t("noDataAvailable")}</span>
+                        )}
                       </div>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <progress
-                      className={`progress ${asset.allocation >= 40 ? "progress-primary" : asset.allocation >= 20 ? "progress-secondary" : "progress-accent"} flex-1`}
-                      value={asset.allocation}
-                      max="100"
-                    />
-                    <span className="text-xs text-base-content/60 w-10 text-right">{formatNumber(asset.allocation)}%</span>
-                  </div>
-                </div>
-              ))}
-              
-              {/* 확장/축소 버튼 */}
-              {portfolio.coins.length > INITIAL_COINS_COUNT && (
-                <button
-                  className="btn btn-ghost btn-sm w-full"
-                  onClick={() => setIsCoinsExpanded(!isCoinsExpanded)}
-                >
-                  {isCoinsExpanded ? (
-                    <>
-                      <ChevronUp className="w-4 h-4" />
-                      {t("collapse")}
-                    </>
-                  ) : (
-                    <>
-                      <ChevronDown className="w-4 h-4" />
-                      {portfolio.coins.length - INITIAL_COINS_COUNT}{t("showMore")}
-                    </>
-                  )}
-                </button>
+                </>
               )}
-              
-              {/* 코인 개수 표시 */}
-              <div className="text-right">
-                <span className="text-xs text-base-content/50">{t("totalCoins", { count: portfolio.coins.length })}</span>
-              </div>
-            </div>
 
-            {/* 투자 성향 */}
-            {investStyle && (
-              <>
-                <div className="divider">{t("investStyleAnalysis")}</div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="bg-base-100 p-3 rounded-lg text-center">
-                    <div className="text-xs text-base-content/60 mb-1">{t("riskLevel")}</div>
-                    <div className={`badge badge-lg ${
-                      investStyle.riskLevel === '높음' ? 'badge-error' : 
-                      investStyle.riskLevel === '중간' ? 'badge-warning' : 'badge-success'
-                    }`}>
-                      {investStyle.riskLevel}
-                    </div>
-                  </div>
-                  <div className="bg-base-100 p-3 rounded-lg text-center">
-                    <div className="text-xs text-base-content/60 mb-1">{t("tradingFrequency")}</div>
-                    <div className="text-sm font-semibold">{investStyle.tradingFrequency}</div>
-                  </div>
-                  <div className="bg-base-100 p-3 rounded-lg text-center">
-                    <div className="text-xs text-base-content/60 mb-1">{t("avgHoldingPeriod")}</div>
-                    <div className="text-sm font-semibold">{investStyle.avgHoldingPeriod}</div>
-                  </div>
-                  <div className="bg-base-100 p-3 rounded-lg text-center">
-                    <div className="text-xs text-base-content/60 mb-1">{t("preferredCoins")}</div>
-                    <div className="flex gap-1 justify-center flex-wrap">
-                      {investStyle.preferredCoins && investStyle.preferredCoins.length > 0 ? (
-                        investStyle.preferredCoins.slice(0, 3).map((coin) => (
-                          <span key={coin} className="badge badge-sm badge-outline">{coin}</span>
-                        ))
-                      ) : (
-                        <span className="text-xs text-base-content/40">{t("noDataAvailable")}</span>
-                      )}
-                    </div>
+              {/* 종합 평가 */}
+              {aiEvaluation.portfolioAdvice && (
+                <div className="alert mt-4">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" className="stroke-info shrink-0 w-6 h-6">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                  </svg>
+                  <div>
+                    <h3 className="font-bold text-sm">{t("investmentAdvice")}</h3>
+                    <div className="text-xs">{aiEvaluation.portfolioAdvice}</div>
                   </div>
                 </div>
-              </>
-            )}
-
-            {/* 종합 평가 */}
-            {aiEvaluation.portfolioAdvice && (
-              <div className="alert mt-4">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" className="stroke-info shrink-0 w-6 h-6">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                </svg>
-                <div>
-                  <h3 className="font-bold text-sm">{t("investmentAdvice")}</h3>
-                  <div className="text-xs">{aiEvaluation.portfolioAdvice}</div>
-                </div>
-              </div>
-            )}
+              )}
             </>
           )}
         </div>

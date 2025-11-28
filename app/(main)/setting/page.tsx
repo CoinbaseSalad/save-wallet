@@ -177,7 +177,7 @@ export default function SettingPage() {
           </p>
           <div className="modal-action">
             <form method="dialog">
-              <button className="btn btn-ghost">{t("cancel") || "취소"}</button>
+              <button className="btn btn-ghost">{t("cancel")}</button>
             </form>
             <button
               className="btn btn-error"
