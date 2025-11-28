@@ -1,12 +1,12 @@
 "use client";
 
-import { useState, useRef, useMemo, useCallback } from "react";
+import { useState, useRef, useMemo } from "react";
 import { Search, Wallet, TrendingUp, TrendingDown, ArrowUpRight, ArrowDownRight, PieChart, Activity, ChevronDown, ChevronUp, RefreshCw } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useUserSettings } from "@/app/hooks/useUserSettings";
 import { useLocaleSettings } from "@/app/hooks/useLocaleSettings";
+import { useWalletSearchMutation, useCachedWalletAnalysis } from "@/app/hooks/useWalletQuery";
 import { formatCurrency, formatNumber, formatPercent } from "@/app/utils/currency";
-import type { AnalyzeResponse, AnalyzeResponseData } from "@/app/api/wallet/types";
 import type { Locale } from "@/i18n/routing";
 
 // 점수에 따른 색상 계산 (0-10)
@@ -95,12 +95,19 @@ export default function SearchPage() {
 
   // 검색 상태
   const [walletAddress, setWalletAddress] = useState("");
-  const [isSearching, setIsSearching] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [searchedAddress, setSearchedAddress] = useState<string | null>(null);
 
-  // API 데이터 상태
-  const [searchResult, setSearchResult] = useState<AnalyzeResponseData | null>(null);
+  // React Query Mutation 사용
+  const {
+    mutate: searchWallet,
+    data: searchResult,
+    isPending: isLoading,
+    error,
+    reset,
+  } = useWalletSearchMutation();
+
+  // 캐시된 결과 확인
+  const cachedResult = useCachedWalletAnalysis(searchedAddress, "base");
 
   // UI 상태
   const [isTradesExpanded, setIsTradesExpanded] = useState(false);
@@ -119,67 +126,51 @@ export default function SearchPage() {
     }
   };
 
+  // 검색 파라미터
+  const searchParams = useMemo(() => ({
+    walletAddress: walletAddress.trim(),
+    chainKey: "base",
+    locale: locale,
+    userSettings: settings
+      ? {
+          investmentStyle: settings.investment_style,
+          livingExpenseRatio: settings.living_expense_ratio,
+          investmentRatio: settings.investment_ratio,
+          roastLevel: settings.roast_level,
+        }
+      : {
+          investmentStyle: 2,
+          livingExpenseRatio: 50,
+          investmentRatio: 30,
+          roastLevel: 2,
+        },
+  }), [walletAddress, settings, locale]);
+
   // 검색 API 호출
-  const handleSearch = useCallback(async () => {
+  const handleSearch = () => {
     if (!walletAddress.trim()) return;
 
-    setIsSearching(true);
-    setIsLoading(true);
-    setSearchResult(null);
-    setError(null);
-
-    try {
-      const response = await fetch('/api/wallet/analyze', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          walletAddress: walletAddress.trim(),
-          chainKey: 'base',
-          locale: locale,
-          userSettings: settings ? {
-            investmentStyle: settings.investment_style,
-            livingExpenseRatio: settings.living_expense_ratio,
-            investmentRatio: settings.investment_ratio,
-            roastLevel: settings.roast_level,
-          } : {
-            investmentStyle: 2,
-            livingExpenseRatio: 50,
-            investmentRatio: 30,
-            roastLevel: 2,
-          },
-        }),
-      });
-
-      const result: AnalyzeResponse = await response.json();
-
-      if (result.success && result.data) {
-        setSearchResult(result.data);
-      } else {
-        setError(result.error?.message || t("searchFailed"));
-      }
-    } catch (err) {
-      console.error('API 호출 오류:', err);
-      setError(tError("serverConnection"));
-    } finally {
-      setIsLoading(false);
-    }
-  }, [walletAddress, settings, locale, t, tError]);
-
-  const handleReset = () => {
-    setIsSearching(false);
-    setSearchResult(null);
-    setWalletAddress("");
-    setIsTradesExpanded(false);
-    setError(null);
+    setSearchedAddress(walletAddress.trim());
+    searchWallet(searchParams);
   };
 
+  const handleReset = () => {
+    setSearchedAddress(null);
+    setWalletAddress("");
+    setIsTradesExpanded(false);
+    setIsCoinsExpanded(false);
+    reset();
+  };
+
+  // 표시할 데이터 (새 결과 또는 캐시)
+  const displayData = searchResult || cachedResult;
+  const isSearching = !!searchedAddress;
+
   // 데이터 추출
-  const aiEvaluation = searchResult?.aiEvaluation;
-  const recentTrades = searchResult?.recentTrades || [];
-  const portfolio = searchResult?.portfolio;
-  const investStyle = searchResult?.investStyle;
+  const aiEvaluation = displayData?.aiEvaluation;
+  const recentTrades = displayData?.recentTrades || [];
+  const portfolio = displayData?.portfolio;
+  const investStyle = displayData?.investStyle;
 
   const totalValue = portfolio?.totalValueUsd || 0;
   const totalChange24h = portfolio?.totalChange24h || 0;
@@ -280,7 +271,7 @@ export default function SearchPage() {
             <div className="flex items-center gap-2">
               <Wallet className="w-5 h-5 text-primary" />
               <span className="font-mono text-sm bg-base-200 px-3 py-1 rounded-lg">
-                {walletAddress.length > 20 ? `${walletAddress.slice(0, 10)}...${walletAddress.slice(-8)}` : walletAddress}
+                {searchedAddress && searchedAddress.length > 20 ? `${searchedAddress.slice(0, 10)}...${searchedAddress.slice(-8)}` : searchedAddress}
               </span>
             </div>
             <button className="btn btn-ghost btn-sm" onClick={handleReset}>
@@ -294,7 +285,7 @@ export default function SearchPage() {
               <div className="card-body text-center">
                 <div className="text-error text-4xl mb-4">⚠️</div>
                 <h2 className="card-title justify-center">{tError("title")}</h2>
-                <p className="text-sm text-base-content/70">{error}</p>
+                <p className="text-sm text-base-content/70">{error.message}</p>
                 <button className="btn btn-primary mt-4" onClick={handleSearch}>
                   <RefreshCw className="w-4 h-4" />
                   {tCommon("retry")}
@@ -306,7 +297,7 @@ export default function SearchPage() {
           {isLoading ? (
             <SearchResultSkeleton />
           ) : (
-            searchResult && aiEvaluation && (
+            displayData && aiEvaluation && (
               <div className="space-y-6">
                 {/* 전체 평가 영역 */}
                 <div className="card bg-base-200 shadow-lg">

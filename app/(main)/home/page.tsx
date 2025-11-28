@@ -1,13 +1,13 @@
 "use client";
 
-import { useState, useRef, useMemo, useEffect, useCallback } from "react";
+import { useState, useRef, useMemo } from "react";
 import { TrendingUp, TrendingDown, ArrowUpRight, ArrowDownRight, Wallet, PieChart, Activity, ChevronDown, ChevronUp, RefreshCw } from "lucide-react";
 import { useAccount } from "wagmi";
 import { useTranslations } from "next-intl";
 import { useUserSettings } from "@/app/hooks/useUserSettings";
 import { useLocaleSettings } from "@/app/hooks/useLocaleSettings";
+import { useWalletAnalysis, useInvalidateWalletCache } from "@/app/hooks/useWalletQuery";
 import { formatCurrency, formatNumber, formatPercent } from "@/app/utils/currency";
-import type { AnalyzeResponse, AnalyzeResponseData } from "@/app/api/wallet/types";
 import type { Locale } from "@/i18n/routing";
 
 // 점수에 따른 색상 계산 (0-10)
@@ -95,10 +95,40 @@ export default function HomePage() {
   const tError = useTranslations("error");
   const tCommon = useTranslations("common");
 
-  // API 데이터 상태
-  const [data, setData] = useState<AnalyzeResponseData | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  // React Query params
+  const analysisParams = useMemo(() => {
+    if (!address) return null;
+    return {
+      walletAddress: address,
+      chainKey: "base",
+      locale: locale,
+      userSettings: settings
+        ? {
+            investmentStyle: settings.investment_style,
+            livingExpenseRatio: settings.living_expense_ratio,
+            investmentRatio: settings.investment_ratio,
+            roastLevel: settings.roast_level,
+          }
+        : {
+            investmentStyle: 2,
+            livingExpenseRatio: 50,
+            investmentRatio: 30,
+            roastLevel: 2,
+          },
+    };
+  }, [address, settings, locale]);
+
+  // React Query 훅 사용
+  const { data, isLoading, error, refetch, isFetching } = useWalletAnalysis(analysisParams);
+  const { invalidateAnalysis } = useInvalidateWalletCache();
+
+  // 새로고침 핸들러
+  const handleRefresh = () => {
+    if (address) {
+      invalidateAnalysis(address, "base");
+      refetch();
+    }
+  };
 
   // UI 상태
   const [isExpanded, setIsExpanded] = useState(false);
@@ -116,62 +146,6 @@ export default function HomePage() {
         return t("evaluationNormal");
     }
   };
-
-  // API 호출 함수
-  const fetchAnalysis = useCallback(async () => {
-    if (!address) {
-      setIsLoading(false);
-      return;
-    }
-
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      const response = await fetch('/api/wallet/analyze', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          walletAddress: address,
-          chainKey: 'base',
-          locale: locale,
-          userSettings: settings ? {
-            investmentStyle: settings.investment_style,
-            livingExpenseRatio: settings.living_expense_ratio,
-            investmentRatio: settings.investment_ratio,
-            roastLevel: settings.roast_level,
-          } : {
-            investmentStyle: 2,
-            livingExpenseRatio: 50,
-            investmentRatio: 30,
-            roastLevel: 2,
-          },
-        }),
-      });
-
-      const result: AnalyzeResponse = await response.json();
-
-      if (result.success && result.data) {
-        setData(result.data);
-      } else {
-        setError(result.error?.message || tError("fetchFailed"));
-      }
-    } catch (err) {
-      console.error('API 호출 오류:', err);
-      setError(tError("serverConnection"));
-    } finally {
-      setIsLoading(false);
-    }
-  }, [address, settings, locale, tError]);
-
-  // 지갑 연결 시 데이터 로드
-  useEffect(() => {
-    if (isConnected && address) {
-      fetchAnalysis();
-    }
-  }, [isConnected, address, fetchAnalysis]);
 
   // 데이터 추출
   const aiEvaluation = data?.aiEvaluation;
@@ -252,8 +226,8 @@ export default function HomePage() {
           <div className="card-body text-center">
             <div className="text-error text-4xl mb-4">⚠️</div>
             <h2 className="card-title justify-center">{tError("title")}</h2>
-            <p className="text-sm text-base-content/70">{error}</p>
-            <button className="btn btn-primary mt-4" onClick={fetchAnalysis}>
+            <p className="text-sm text-base-content/70">{error.message}</p>
+            <button className="btn btn-primary mt-4" onClick={handleRefresh}>
               <RefreshCw className="w-4 h-4" />
               {tCommon("retry")}
             </button>
@@ -274,7 +248,7 @@ export default function HomePage() {
             <p className="text-sm text-base-content/70">
               {tError("noDataDescription")}
             </p>
-            <button className="btn btn-primary mt-4" onClick={fetchAnalysis}>
+            <button className="btn btn-primary mt-4" onClick={handleRefresh}>
               <RefreshCw className="w-4 h-4" />
               {tCommon("retry")}
             </button>
@@ -296,10 +270,10 @@ export default function HomePage() {
             </h2>
             <button
               className="btn btn-ghost btn-sm btn-circle"
-              onClick={fetchAnalysis}
-              disabled={isLoading}
+              onClick={handleRefresh}
+              disabled={isFetching}
             >
-              <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
+              <RefreshCw className={`w-4 h-4 ${isFetching ? 'animate-spin' : ''}`} />
             </button>
           </div>
 

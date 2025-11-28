@@ -1,12 +1,13 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useMemo } from "react";
 import { TrendingUp, TrendingDown, AlertTriangle, AlertCircle, ExternalLink, Wallet, ChevronDown, ChevronUp, RefreshCw } from "lucide-react";
 import { useAccount } from "wagmi";
 import { useTranslations } from "next-intl";
 import { useLocaleSettings } from "@/app/hooks/useLocaleSettings";
+import { useWalletAssets, useInvalidateWalletCache } from "@/app/hooks/useWalletQuery";
 import { formatCurrency, formatNumber, formatPercent } from "@/app/utils/currency";
-import type { AssetsResponse, AssetsResponseData, RiskSource, RiskLevel, Importance } from "@/app/api/wallet/types";
+import type { RiskSource, RiskLevel, Importance } from "@/app/api/wallet/types";
 import type { Locale } from "@/i18n/routing";
 
 // 위험도에 따른 아이콘 및 색상
@@ -111,10 +112,26 @@ export default function AssetPage() {
   const tError = useTranslations("error");
   const tCommon = useTranslations("common");
 
-  // API 데이터 상태
-  const [data, setData] = useState<AssetsResponseData | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  // React Query params
+  const assetsParams = useMemo(() => {
+    if (!address) return null;
+    return {
+      walletAddress: address,
+      chainKey: "base",
+    };
+  }, [address]);
+
+  // React Query 훅 사용
+  const { data, isLoading, error, refetch, isFetching } = useWalletAssets(assetsParams);
+  const { invalidateAssets } = useInvalidateWalletCache();
+
+  // 새로고침 핸들러
+  const handleRefresh = () => {
+    if (address) {
+      invalidateAssets(address, "base");
+      refetch();
+    }
+  };
 
   // 근거 더보기 상태 (코인 symbol별로 관리)
   const [expandedSources, setExpandedSources] = useState<Set<string>>(new Set());
@@ -131,50 +148,6 @@ export default function AssetPage() {
       return newSet;
     });
   };
-
-  // API 호출 함수
-  const fetchAssets = useCallback(async () => {
-    if (!address) {
-      setIsLoading(false);
-      return;
-    }
-
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      const response = await fetch('/api/wallet/assets', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          walletAddress: address,
-          chainKey: 'base',
-        }),
-      });
-
-      const result: AssetsResponse = await response.json();
-
-      if (result.success && result.data) {
-        setData(result.data);
-      } else {
-        setError(result.error?.message || tError("fetchFailed"));
-      }
-    } catch (err) {
-      console.error('API 호출 오류:', err);
-      setError(tError("serverConnection"));
-    } finally {
-      setIsLoading(false);
-    }
-  }, [address]);
-
-  // 지갑 연결 시 데이터 로드
-  useEffect(() => {
-    if (isConnected && address) {
-      fetchAssets();
-    }
-  }, [isConnected, address, fetchAssets]);
 
   // 데이터 추출
   const summary = data?.summary;
@@ -211,8 +184,8 @@ export default function AssetPage() {
           <div className="card-body text-center">
             <div className="text-error text-4xl mb-4">⚠️</div>
             <h2 className="card-title justify-center">{tError("title")}</h2>
-            <p className="text-sm text-base-content/70">{error}</p>
-            <button className="btn btn-primary mt-4" onClick={fetchAssets}>
+            <p className="text-sm text-base-content/70">{error.message}</p>
+            <button className="btn btn-primary mt-4" onClick={handleRefresh}>
               <RefreshCw className="w-4 h-4" />
               {tCommon("retry")}
             </button>
@@ -233,7 +206,7 @@ export default function AssetPage() {
             <p className="text-sm text-base-content/70">
               {tError("noDataDescription")}
             </p>
-            <button className="btn btn-primary mt-4" onClick={fetchAssets}>
+            <button className="btn btn-primary mt-4" onClick={handleRefresh}>
               <RefreshCw className="w-4 h-4" />
               {tCommon("retry")}
             </button>
@@ -255,10 +228,10 @@ export default function AssetPage() {
             </h2>
             <button
               className="btn btn-ghost btn-sm btn-circle"
-              onClick={fetchAssets}
-              disabled={isLoading}
+              onClick={handleRefresh}
+              disabled={isFetching}
             >
-              <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
+              <RefreshCw className={`w-4 h-4 ${isFetching ? 'animate-spin' : ''}`} />
             </button>
           </div>
 
