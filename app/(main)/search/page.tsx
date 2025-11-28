@@ -441,7 +441,7 @@ export default function SearchPage() {
                                       </span>
                                     </div>
                                     <div className="text-xs text-base-content/70">
-                                      {formatNumber(trade.amount, locale as Locale)} {trade.coin} @ {formatCurrency(trade.price, locale as Locale)}
+                                      {formatNumber(trade.amount, locale as Locale, 6)} {trade.coin} @ {formatCurrency(trade.price, locale as Locale)}
                                     </div>
                                     {trade.comment && (
                                       <div className="text-xs mt-1 italic text-base-content/60">
@@ -528,7 +528,7 @@ export default function SearchPage() {
                                   )}
                                   <span className="font-bold">{asset.symbol}</span>
                                   <span className="text-xs text-base-content/60">
-                                    {formatNumber(asset.amount, locale as Locale)} {asset.symbol}
+                                    {formatNumber(asset.amount, locale as Locale, 6)} {asset.symbol}
                                   </span>
                                 </div>
                                 <div className="text-right">

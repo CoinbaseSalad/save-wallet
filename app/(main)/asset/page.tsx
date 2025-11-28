@@ -359,8 +359,8 @@ export default function AssetPage() {
 
                     {/* 보유량 및 가격 */}
                     <div className="flex items-center justify-between mt-2 text-sm text-base-content/70">
-                      <span>{tAsset("amount")}: {formatNumber(coin.amount, locale as Locale)} {coin.symbol}</span>
-                      <span>@{formatCurrency(coin.price, locale as Locale)}</span>
+                      <span>{tAsset("amount")}: {formatNumber(coin.amount, locale as Locale, 6)} {coin.symbol}</span>
+                      <span>{formatCurrency(coin.price, locale as Locale)}</span>
                     </div>
                   </div>
                 </div>
