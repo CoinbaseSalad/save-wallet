@@ -1,9 +1,6 @@
 import { Errors, createClient } from "@farcaster/quick-auth";
 import { NextRequest, NextResponse } from "next/server";
 
-// Cloudflare Edge Runtime 설정 추가
-export const runtime = 'edge';
-
 const client = createClient();
 
 // Helper function to determine the correct domain for JWT verification
@@ -29,11 +26,8 @@ function getUrlHost(request: NextRequest): string {
   let urlValue: string;
 
   if (process.env.NEXT_PUBLIC_URL) {
-    // 사용자가 설정한 URL 최우선 (Cloudflare/Vercel 프로덕션 모두 권장)
+    // 사용자가 설정한 URL 최우선
     urlValue = process.env.NEXT_PUBLIC_URL;
-  } else if (process.env.CF_PAGES_URL) {
-    // Cloudflare Pages 미리보기/배포 URL
-    urlValue = process.env.CF_PAGES_URL;
   } else if (process.env.VERCEL_URL) {
     // Vercel 미리보기 URL
     urlValue = `https://${process.env.VERCEL_URL}`;
