@@ -268,6 +268,9 @@ export default function HomePage() {
 
   return (
     <div className="p-4 space-y-6 max-w-lg mx-auto">
+      {/* 새로고침 시 분석 모달 표시 */}
+      {isFetching && !isLoading && <AnalyzingModal isOpen={true} />}
+
       {/* 전체 평가 영역 */}
       <div className="card bg-base-200 shadow-lg">
         <div className="card-body">
