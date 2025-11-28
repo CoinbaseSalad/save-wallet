@@ -2,7 +2,10 @@
 
 import { useCallback, useEffect, useState, useTransition } from 'react';
 import { useLocale } from 'next-intl';
+import { useRouter } from 'next/navigation';
+import { useQueryClient } from '@tanstack/react-query';
 import { locales, type Locale, localeNames, localeFlags } from '@/i18n/routing';
+import { walletKeys } from './useWalletQuery';
 
 const LOCALE_COOKIE_NAME = 'NEXT_LOCALE';
 
@@ -51,6 +54,8 @@ function setLocaleCookie(locale: Locale): void {
 
 export function useLocaleSettings() {
   const currentLocale = useLocale() as Locale;
+  const router = useRouter();
+  const queryClient = useQueryClient();
   const [isPending, startTransition] = useTransition();
   const [isInitialized, setIsInitialized] = useState(false);
 
@@ -63,23 +68,25 @@ export function useLocaleSettings() {
       const detectedLocale = detectBrowserLocale();
       setLocaleCookie(detectedLocale);
 
-      // 감지된 언어가 현재 언어와 다르면 페이지 새로고침
+      // 감지된 언어가 현재 언어와 다르면 서버 컴포넌트 새로고침
       if (detectedLocale !== currentLocale) {
-        window.location.reload();
+        router.refresh();
       }
     }
 
     setIsInitialized(true);
-  }, [currentLocale]);
+  }, [currentLocale, router]);
 
   // 언어 변경 함수
   const changeLocale = useCallback((newLocale: Locale) => {
     startTransition(() => {
       setLocaleCookie(newLocale);
-      // 페이지 새로고침하여 새 언어 적용
-      window.location.reload();
+      // 언어 변경 시 지갑 분석 캐시 삭제 (새 언어로 다시 요청하도록)
+      queryClient.removeQueries({ queryKey: walletKeys.analyze() });
+      // 서버 컴포넌트만 새로고침하여 새 언어 적용 (클라이언트 상태 유지)
+      router.refresh();
     });
-  }, []);
+  }, [router, queryClient]);
 
   // 저장된 언어 가져오기 (없으면 브라우저 언어)
   const getSavedLocale = useCallback((): Locale => {

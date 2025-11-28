@@ -7,6 +7,7 @@ import { useUserSettings } from "@/app/hooks/useUserSettings";
 import { useLocaleSettings } from "@/app/hooks/useLocaleSettings";
 import { useWalletSearchMutation, useCachedWalletAnalysis } from "@/app/hooks/useWalletQuery";
 import { formatCurrency, formatNumber, formatPercent } from "@/app/utils/currency";
+import AnalyzingModal from "@/app/components/AnalyzingModal";
 import type { Locale } from "@/i18n/routing";
 
 // 점수에 따른 색상 계산 (0-10)
@@ -133,17 +134,17 @@ export default function SearchPage() {
     locale: locale,
     userSettings: settings
       ? {
-          investmentStyle: settings.investment_style,
-          livingExpenseRatio: settings.living_expense_ratio,
-          investmentRatio: settings.investment_ratio,
-          roastLevel: settings.roast_level,
-        }
+        investmentStyle: settings.investment_style,
+        livingExpenseRatio: settings.living_expense_ratio,
+        investmentRatio: settings.investment_ratio,
+        roastLevel: settings.roast_level,
+      }
       : {
-          investmentStyle: 2,
-          livingExpenseRatio: 50,
-          investmentRatio: 30,
-          roastLevel: 2,
-        },
+        investmentStyle: 2,
+        livingExpenseRatio: 50,
+        investmentRatio: 30,
+        roastLevel: 2,
+      },
   }), [walletAddress, settings, locale]);
 
   // 검색 API 호출
@@ -295,7 +296,10 @@ export default function SearchPage() {
           )}
 
           {isLoading ? (
-            <SearchResultSkeleton />
+            <>
+              <AnalyzingModal isOpen={true} />
+              <SearchResultSkeleton />
+            </>
           ) : (
             displayData && aiEvaluation && (
               <div className="space-y-6">
@@ -592,7 +596,7 @@ export default function SearchPage() {
                               <div className="bg-base-100 p-3 rounded-lg text-center">
                                 <div className="text-xs text-base-content/60 mb-1">{tHome("riskLevel")}</div>
                                 <div className={`badge badge-lg ${investStyle.riskLevel === '높음' ? 'badge-error' :
-                                    investStyle.riskLevel === '중간' ? 'badge-warning' : 'badge-success'
+                                  investStyle.riskLevel === '중간' ? 'badge-warning' : 'badge-success'
                                   }`}>
                                   {investStyle.riskLevel}
                                 </div>

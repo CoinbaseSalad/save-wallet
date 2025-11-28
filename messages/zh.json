@@ -1,4 +1,10 @@
 {
+  "analyzing": {
+    "title": "AI分析中",
+    "description": "正在收集钱包数据并由AI进行分析。",
+    "timeNotice": "分析可能需要10-15秒。请稍候。",
+    "progress": "正在分析数据..."
+  },
   "common": {
     "loading": "加载中...",
     "error": "发生错误",

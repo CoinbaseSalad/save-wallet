@@ -8,6 +8,7 @@ import { useUserSettings } from "@/app/hooks/useUserSettings";
 import { useLocaleSettings } from "@/app/hooks/useLocaleSettings";
 import { useWalletAnalysis, useInvalidateWalletCache } from "@/app/hooks/useWalletQuery";
 import { formatCurrency, formatNumber, formatPercent } from "@/app/utils/currency";
+import AnalyzingModal from "@/app/components/AnalyzingModal";
 import type { Locale } from "@/i18n/routing";
 
 // 점수에 따른 색상 계산 (0-10)
@@ -104,17 +105,17 @@ export default function HomePage() {
       locale: locale,
       userSettings: settings
         ? {
-            investmentStyle: settings.investment_style,
-            livingExpenseRatio: settings.living_expense_ratio,
-            investmentRatio: settings.investment_ratio,
-            roastLevel: settings.roast_level,
-          }
+          investmentStyle: settings.investment_style,
+          livingExpenseRatio: settings.living_expense_ratio,
+          investmentRatio: settings.investment_ratio,
+          roastLevel: settings.roast_level,
+        }
         : {
-            investmentStyle: 2,
-            livingExpenseRatio: 50,
-            investmentRatio: 30,
-            roastLevel: 2,
-          },
+          investmentStyle: 2,
+          livingExpenseRatio: 50,
+          investmentRatio: 30,
+          roastLevel: 2,
+        },
     };
   }, [address, settings, locale]);
 
@@ -213,9 +214,14 @@ export default function HomePage() {
     );
   }
 
-  // 로딩 상태
+  // 로딩 상태 - 스켈레톤과 모달 함께 표시
   if (isLoading) {
-    return <HomePageSkeleton />;
+    return (
+      <>
+        <AnalyzingModal isOpen={true} />
+        <HomePageSkeleton />
+      </>
+    );
   }
 
   // 에러 상태
@@ -550,7 +556,7 @@ export default function HomePage() {
                     <div className="bg-base-100 p-3 rounded-lg text-center">
                       <div className="text-xs text-base-content/60 mb-1">{t("riskLevel")}</div>
                       <div className={`badge badge-lg ${investStyle.riskLevel === '높음' ? 'badge-error' :
-                          investStyle.riskLevel === '중간' ? 'badge-warning' : 'badge-success'
+                        investStyle.riskLevel === '중간' ? 'badge-warning' : 'badge-success'
                         }`}>
                         {investStyle.riskLevel}
                       </div>

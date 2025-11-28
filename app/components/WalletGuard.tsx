@@ -15,12 +15,12 @@ interface WalletGuardProps {
 export default function WalletGuard({ children }: WalletGuardProps) {
   const router = useRouter();
   const pathname = usePathname();
-  const { isConnected, isConnecting } = useAccount();
+  const { isConnected, isConnecting, isReconnecting } = useAccount();
   const [isChecking, setIsChecking] = useState(true);
 
   useEffect(() => {
-    // 연결 중일 때는 체크하지 않음
-    if (isConnecting) {
+    // 연결 중이거나 재연결 중(hydration)일 때는 체크하지 않음
+    if (isConnecting || isReconnecting) {
       return;
     }
 
@@ -40,10 +40,10 @@ export default function WalletGuard({ children }: WalletGuardProps) {
     }
 
     setIsChecking(false);
-  }, [isConnected, isConnecting, pathname, router]);
+  }, [isConnected, isConnecting, isReconnecting, pathname, router]);
 
-  // 연결 확인 중이거나 연결 중일 때 로딩 표시
-  if (isChecking || isConnecting) {
+  // 연결 확인 중이거나 연결/재연결 중일 때 로딩 표시
+  if (isChecking || isConnecting || isReconnecting) {
     // 공개 경로는 바로 렌더링
     if (PUBLIC_PATHS.includes(pathname)) {
       return <>{children}</>;

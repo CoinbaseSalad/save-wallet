@@ -1,4 +1,10 @@
 {
+  "analyzing": {
+    "title": "AI Analyzing",
+    "description": "Collecting wallet data and analyzing with AI.",
+    "timeNotice": "Analysis may take about 10-15 seconds. Please wait.",
+    "progress": "Analyzing data..."
+  },
   "common": {
     "loading": "Loading...",
     "error": "An error occurred",

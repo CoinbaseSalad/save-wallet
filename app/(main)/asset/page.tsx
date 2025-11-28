@@ -7,6 +7,7 @@ import { useTranslations } from "next-intl";
 import { useLocaleSettings } from "@/app/hooks/useLocaleSettings";
 import { useWalletAssets, useInvalidateWalletCache } from "@/app/hooks/useWalletQuery";
 import { formatCurrency, formatNumber, formatPercent } from "@/app/utils/currency";
+import AnalyzingModal from "@/app/components/AnalyzingModal";
 import type { RiskSource, RiskLevel, Importance } from "@/app/api/wallet/types";
 import type { Locale } from "@/i18n/routing";
 
@@ -171,9 +172,14 @@ export default function AssetPage() {
     );
   }
 
-  // 로딩 상태
+  // 로딩 상태 - 스켈레톤과 모달 함께 표시
   if (isLoading) {
-    return <AssetPageSkeleton />;
+    return (
+      <>
+        <AnalyzingModal isOpen={true} />
+        <AssetPageSkeleton />
+      </>
+    );
   }
 
   // 에러 상태
