@@ -3,8 +3,9 @@
 import { useState, useRef, useMemo, useEffect, useCallback } from "react";
 import { TrendingUp, TrendingDown, ArrowUpRight, ArrowDownRight, Wallet, PieChart, Activity, ChevronDown, ChevronUp, RefreshCw } from "lucide-react";
 import { useAccount } from "wagmi";
+import { useTranslations } from "next-intl";
 import { useUserSettings } from "@/app/hooks/useUserSettings";
-import type { AnalyzeResponse, AnalyzeResponseData, TradeEvaluationItem, PortfolioCoinSummary, InvestStyleAnalysis, AIEvaluation } from "@/app/api/wallet/types";
+import type { AnalyzeResponse, AnalyzeResponseData } from "@/app/api/wallet/types";
 
 // 점수에 따른 색상 계산 (0-10)
 const getScoreColor = (score: number) => {
@@ -31,18 +32,6 @@ const getEvaluationBadge = (evaluation: string) => {
       return "badge-error";
     default:
       return "badge-warning";
-  }
-};
-
-// 평가 텍스트
-const getEvaluationText = (evaluation: string) => {
-  switch (evaluation) {
-    case "good":
-      return "좋음";
-    case "bad":
-      return "주의";
-    default:
-      return "보통";
   }
 };
 
@@ -106,6 +95,10 @@ const HomePageSkeleton = () => (
 export default function HomePage() {
   const { address, isConnected } = useAccount();
   const { settings } = useUserSettings();
+  const t = useTranslations("home");
+  const tWallet = useTranslations("wallet");
+  const tError = useTranslations("error");
+  const tCommon = useTranslations("common");
   
   // API 데이터 상태
   const [data, setData] = useState<AnalyzeResponseData | null>(null);
@@ -115,6 +108,18 @@ export default function HomePage() {
   // UI 상태
   const [isExpanded, setIsExpanded] = useState(false);
   const dateRefs = useRef<Record<string, HTMLDivElement | null>>({});
+
+  // 평가 텍스트 (번역)
+  const getEvaluationText = (evaluation: string) => {
+    switch (evaluation) {
+      case "good":
+        return t("evaluationGood");
+      case "bad":
+        return t("evaluationBad");
+      default:
+        return t("evaluationNormal");
+    }
+  };
 
   // API 호출 함수
   const fetchAnalysis = useCallback(async () => {
@@ -154,15 +159,15 @@ export default function HomePage() {
       if (result.success && result.data) {
         setData(result.data);
       } else {
-        setError(result.error?.message || '분석 데이터를 가져오는데 실패했습니다.');
+        setError(result.error?.message || tError("fetchFailed"));
       }
     } catch (err) {
       console.error('API 호출 오류:', err);
-      setError('서버 연결에 실패했습니다.');
+      setError(tError("serverConnection"));
     } finally {
       setIsLoading(false);
     }
-  }, [address, settings]);
+  }, [address, settings, tError]);
 
   // 지갑 연결 시 데이터 로드
   useEffect(() => {
@@ -227,9 +232,9 @@ export default function HomePage() {
         <div className="card bg-base-200 shadow-lg">
           <div className="card-body text-center">
             <Wallet className="w-16 h-16 mx-auto text-primary mb-4" />
-            <h2 className="card-title justify-center">지갑을 연결해주세요</h2>
+            <h2 className="card-title justify-center">{tWallet("connect")}</h2>
             <p className="text-sm text-base-content/70">
-              지갑 분석을 위해 먼저 지갑을 연결해주세요.
+              {tWallet("connectDescription")}
             </p>
           </div>
         </div>
@@ -249,11 +254,11 @@ export default function HomePage() {
         <div className="card bg-base-200 shadow-lg">
           <div className="card-body text-center">
             <div className="text-error text-4xl mb-4">⚠️</div>
-            <h2 className="card-title justify-center">오류가 발생했습니다</h2>
+            <h2 className="card-title justify-center">{tError("title")}</h2>
             <p className="text-sm text-base-content/70">{error}</p>
             <button className="btn btn-primary mt-4" onClick={fetchAnalysis}>
               <RefreshCw className="w-4 h-4" />
-              다시 시도
+              {tCommon("retry")}
             </button>
           </div>
         </div>
@@ -268,13 +273,13 @@ export default function HomePage() {
         <div className="card bg-base-200 shadow-lg">
           <div className="card-body text-center">
             <div className="text-4xl mb-4">📊</div>
-            <h2 className="card-title justify-center">데이터가 없습니다</h2>
+            <h2 className="card-title justify-center">{tError("noData")}</h2>
             <p className="text-sm text-base-content/70">
-              지갑 분석 데이터를 가져올 수 없습니다.
+              {tError("noDataDescription")}
             </p>
             <button className="btn btn-primary mt-4" onClick={fetchAnalysis}>
               <RefreshCw className="w-4 h-4" />
-              다시 시도
+              {tCommon("retry")}
             </button>
           </div>
         </div>
@@ -290,7 +295,7 @@ export default function HomePage() {
           <div className="flex items-center justify-between">
             <h2 className="card-title text-lg flex items-center gap-2">
               <Activity className="w-5 h-5 text-primary" />
-              지갑 건강도
+              {t("walletHealth")}
             </h2>
             <button 
               className="btn btn-ghost btn-sm btn-circle"
@@ -314,9 +319,9 @@ export default function HomePage() {
                 />
               </div>
               <div className="flex justify-between text-xs mt-1 text-base-content/60">
-                <span>위험</span>
-                <span>보통</span>
-                <span>양호</span>
+                <span>{t("risk")}</span>
+                <span>{t("normal")}</span>
+                <span>{t("good")}</span>
               </div>
             </div>
             <div className={`text-4xl font-bold ${getScoreColor(aiEvaluation.overallScore)}`}>
@@ -348,8 +353,8 @@ export default function HomePage() {
         <div className="card-body">
           <h2 className="card-title text-lg flex items-center gap-2">
             <Wallet className="w-5 h-5 text-secondary" />
-            최근 거래 평가
-            <span className="text-xs text-base-content/60 font-normal">(최근 7일)</span>
+            {t("recentTrades")}
+            <span className="text-xs text-base-content/60 font-normal">({t("last7Days")})</span>
           </h2>
 
           {/* 거래 내역이 없는 경우 */}
@@ -358,8 +363,8 @@ export default function HomePage() {
               <div className="w-16 h-16 rounded-full bg-base-100 flex items-center justify-center mb-4">
                 <Wallet className="w-8 h-8 text-base-content/30" />
               </div>
-              <p className="text-base-content/60 text-sm">최근 7일간 거래 내역이 없습니다</p>
-              <p className="text-base-content/40 text-xs mt-1">거래가 발생하면 여기에 표시됩니다</p>
+              <p className="text-base-content/60 text-sm">{t("noTrades")}</p>
+              <p className="text-base-content/40 text-xs mt-1">{t("tradesWillShow")}</p>
             </div>
           ) : (
             <>
@@ -424,7 +429,7 @@ export default function HomePage() {
                         <div className="flex items-center gap-2 mb-1">
                           <span className="font-bold">{trade.coin}</span>
                           <span className={`badge badge-xs ${trade.type === "buy" ? "badge-success" : "badge-error"}`}>
-                            {trade.type === "buy" ? "매수" : "매도"}
+                            {trade.type === "buy" ? t("buy") : t("sell")}
                           </span>
                           <span className={`badge badge-xs ${getEvaluationBadge(trade.evaluation)}`}>
                             {getEvaluationText(trade.evaluation)}
@@ -454,12 +459,12 @@ export default function HomePage() {
                 {isExpanded ? (
                   <>
                     <ChevronUp className="w-4 h-4" />
-                    접기
+                    {t("collapse")}
                   </>
                 ) : (
                   <>
                     <ChevronDown className="w-4 h-4" />
-                    {recentTrades.length - INITIAL_TRADES_COUNT}개 더보기
+                    {recentTrades.length - INITIAL_TRADES_COUNT}{t("showMore")}
                   </>
                 )}
               </button>
@@ -474,17 +479,17 @@ export default function HomePage() {
         <div className="card-body">
           <h2 className="card-title text-lg flex items-center gap-2">
             <PieChart className="w-5 h-5 text-accent" />
-            포트폴리오 현황
+            {t("portfolio")}
           </h2>
 
           {/* 총 자산 */}
           <div className="stats bg-base-100 shadow">
             <div className="stat">
-              <div className="stat-title">총 평가금액</div>
+              <div className="stat-title">{t("totalValue")}</div>
               <div className="stat-value text-primary">${totalValue.toLocaleString()}</div>
               <div className={`stat-desc flex items-center gap-1 ${totalChange24h >= 0 ? "text-success" : "text-error"}`}>
                 {totalChange24h >= 0 ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
-                전일 대비 {totalChange24h >= 0 ? "+" : ""}{totalChange24h.toFixed(1)}%
+                {t("dayChange")} {totalChange24h >= 0 ? "+" : ""}{totalChange24h.toFixed(1)}%
               </div>
             </div>
           </div>
@@ -495,8 +500,8 @@ export default function HomePage() {
               <div className="w-16 h-16 rounded-full bg-base-100 flex items-center justify-center mb-4">
                 <PieChart className="w-8 h-8 text-base-content/30" />
               </div>
-              <p className="text-base-content/60 text-sm">보유 중인 자산이 없습니다</p>
-              <p className="text-base-content/40 text-xs mt-1">토큰을 보유하면 여기에 표시됩니다</p>
+              <p className="text-base-content/60 text-sm">{t("noAssets")}</p>
+              <p className="text-base-content/40 text-xs mt-1">{t("assetsWillShow")}</p>
             </div>
           ) : (
             <>
@@ -541,17 +546,17 @@ export default function HomePage() {
               ))}
               {/* 코인 개수 표시 */}
               <div className="text-right">
-                <span className="text-xs text-base-content/50">총 {portfolio.coins.length}개 코인 보유</span>
+                <span className="text-xs text-base-content/50">{t("totalCoins", { count: portfolio.coins.length })}</span>
               </div>
             </div>
 
             {/* 투자 성향 */}
             {investStyle && (
               <>
-                <div className="divider">투자 성향 분석</div>
+                <div className="divider">{t("investStyleAnalysis")}</div>
                 <div className="grid grid-cols-2 gap-3">
                   <div className="bg-base-100 p-3 rounded-lg text-center">
-                    <div className="text-xs text-base-content/60 mb-1">위험도</div>
+                    <div className="text-xs text-base-content/60 mb-1">{t("riskLevel")}</div>
                     <div className={`badge badge-lg ${
                       investStyle.riskLevel === '높음' ? 'badge-error' : 
                       investStyle.riskLevel === '중간' ? 'badge-warning' : 'badge-success'
@@ -560,22 +565,22 @@ export default function HomePage() {
                     </div>
                   </div>
                   <div className="bg-base-100 p-3 rounded-lg text-center">
-                    <div className="text-xs text-base-content/60 mb-1">거래 빈도</div>
+                    <div className="text-xs text-base-content/60 mb-1">{t("tradingFrequency")}</div>
                     <div className="text-sm font-semibold">{investStyle.tradingFrequency}</div>
                   </div>
                   <div className="bg-base-100 p-3 rounded-lg text-center">
-                    <div className="text-xs text-base-content/60 mb-1">평균 보유기간</div>
+                    <div className="text-xs text-base-content/60 mb-1">{t("avgHoldingPeriod")}</div>
                     <div className="text-sm font-semibold">{investStyle.avgHoldingPeriod}</div>
                   </div>
                   <div className="bg-base-100 p-3 rounded-lg text-center">
-                    <div className="text-xs text-base-content/60 mb-1">선호 코인</div>
+                    <div className="text-xs text-base-content/60 mb-1">{t("preferredCoins")}</div>
                     <div className="flex gap-1 justify-center flex-wrap">
                       {investStyle.preferredCoins && investStyle.preferredCoins.length > 0 ? (
                         investStyle.preferredCoins.slice(0, 3).map((coin) => (
                           <span key={coin} className="badge badge-sm badge-outline">{coin}</span>
                         ))
                       ) : (
-                        <span className="text-xs text-base-content/40">데이터 없음</span>
+                        <span className="text-xs text-base-content/40">{t("noDataAvailable")}</span>
                       )}
                     </div>
                   </div>
@@ -590,7 +595,7 @@ export default function HomePage() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                 </svg>
                 <div>
-                  <h3 className="font-bold text-sm">투자 조언</h3>
+                  <h3 className="font-bold text-sm">{t("investmentAdvice")}</h3>
                   <div className="text-xs">{aiEvaluation.portfolioAdvice}</div>
                 </div>
               </div>

@@ -4,13 +4,7 @@ import Header from "@/app/components/Header";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Home, Wallet, Search, Settings } from "lucide-react";
-
-const navItems = [
-  { href: "/home", label: "Home", icon: Home },
-  { href: "/asset", label: "Asset", icon: Wallet },
-  { href: "/search", label: "Search", icon: Search },
-  { href: "/setting", label: "Setting", icon: Settings },
-];
+import { useTranslations } from "next-intl";
 
 export default function MainLayout({
   children,
@@ -18,6 +12,14 @@ export default function MainLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const t = useTranslations("nav");
+
+  const navItems = [
+    { href: "/home", label: t("home"), icon: Home },
+    { href: "/asset", label: t("asset"), icon: Wallet },
+    { href: "/search", label: t("search"), icon: Search },
+    { href: "/setting", label: t("setting"), icon: Settings },
+  ];
 
   return (
     <div className="min-h-screen flex flex-col">

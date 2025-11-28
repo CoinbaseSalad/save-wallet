@@ -1,6 +1,7 @@
 "use client";
 
 import { Shield } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { INVESTMENT_STYLES } from "@/app/constants/settings";
 
 interface InvestmentStyleSliderProps {
@@ -9,12 +10,24 @@ interface InvestmentStyleSliderProps {
 }
 
 export default function InvestmentStyleSlider({ value, onChange }: InvestmentStyleSliderProps) {
+  const t = useTranslations("investmentStyle");
+
+  // 번역된 라벨과 설명
+  const getLocalizedStyle = (index: number) => {
+    const keys = ["stable", "conservative", "neutral", "active", "aggressive"];
+    const key = keys[index];
+    return {
+      label: t(key),
+      description: t(`${key}Description`),
+    };
+  };
+
   return (
     <div className="card bg-base-200 shadow-lg">
       <div className="card-body">
         <h2 className="card-title text-lg flex items-center gap-2">
           <Shield className="w-5 h-5 text-primary" />
-          투자 성향
+          {t("title")}
         </h2>
 
         {/* 투자 성향 Input - 그라데이션 적용 */}
@@ -55,9 +68,9 @@ export default function InvestmentStyleSlider({ value, onChange }: InvestmentSty
           </div>
           {/* 라벨 표시 */}
           <div className="flex justify-between mt-2 text-[10px]">
-            <span className="text-success font-medium">안정</span>
-            <span className="text-warning font-medium">중립</span>
-            <span className="text-error font-medium">공격</span>
+            <span className="text-success font-medium">{t("stableLabel")}</span>
+            <span className="text-warning font-medium">{t("neutralLabel")}</span>
+            <span className="text-error font-medium">{t("aggressiveLabel")}</span>
           </div>
         </div>
 
@@ -70,10 +83,10 @@ export default function InvestmentStyleSlider({ value, onChange }: InvestmentSty
             <span className="text-3xl">{INVESTMENT_STYLES[value].emoji}</span>
             <div>
               <div className={`font-bold ${INVESTMENT_STYLES[value].color}`}>
-                {INVESTMENT_STYLES[value].label}
+                {getLocalizedStyle(value).label}
               </div>
               <p className="text-sm text-base-content/70 mt-1">
-                {INVESTMENT_STYLES[value].description}
+                {getLocalizedStyle(value).description}
               </p>
             </div>
           </div>
@@ -82,4 +95,3 @@ export default function InvestmentStyleSlider({ value, onChange }: InvestmentSty
     </div>
   );
 }
-

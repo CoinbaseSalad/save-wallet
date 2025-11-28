@@ -4,15 +4,18 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Sparkles } from "lucide-react";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 import { DEFAULT_SETTINGS } from "@/app/constants/settings";
 import { useUserSettings } from "@/app/hooks/useUserSettings";
 import InvestmentStyleSlider from "@/app/components/InvestmentStyleSlider";
 import SalaryAllocationSlider from "@/app/components/SalaryAllocationSlider";
 import RoastLevelSlider from "@/app/components/RoastLevelSlider";
+import LanguageSelector from "@/app/components/LanguageSelector";
 
 export default function OnboardPage() {
   const router = useRouter();
   const { saveSettings } = useUserSettings();
+  const t = useTranslations("onboard");
 
   const [investmentStyle, setInvestmentStyle] = useState(DEFAULT_SETTINGS.investmentStyle);
   const [livingExpenseRatio, setLivingExpenseRatio] = useState(DEFAULT_SETTINGS.livingExpenseRatio);
@@ -35,7 +38,7 @@ export default function OnboardPage() {
     if (success) {
       router.push("/home");
     } else {
-      toast.error("설정 저장에 실패했습니다.");
+      toast.error(t("saveFailed"));
     }
     setIsSubmitting(false);
   };
@@ -46,12 +49,15 @@ export default function OnboardPage() {
       <div className="text-center py-4">
         <h1 className="text-2xl font-bold flex items-center justify-center gap-2">
           <Sparkles className="w-6 h-6 text-primary" />
-          프로필 설정
+          {t("title")}
         </h1>
         <p className="text-sm text-base-content/60 mt-2">
-          더 정확한 투자 평가를 위해 정보를 입력해주세요
+          {t("description")}
         </p>
       </div>
+
+      {/* 언어 선택 */}
+      <LanguageSelector />
 
       {/* 투자 성향 영역 */}
       <InvestmentStyleSlider
@@ -83,17 +89,17 @@ export default function OnboardPage() {
           {isSubmitting ? (
             <>
               <span className="loading loading-spinner"></span>
-              설정 저장 중...
+              {t("saving")}
             </>
           ) : (
             <>
               <Sparkles className="w-5 h-5" />
-              설정 완료
+              {t("complete")}
             </>
           )}
         </button>
         <p className="text-center text-xs text-base-content/50 mt-3">
-          설정은 프로필에서 언제든지 변경할 수 있습니다
+          {t("settingNote")}
         </p>
       </div>
     </div>

@@ -854,7 +854,7 @@ const INVESTMENT_STYLE_LABELS = [
 ];
 
 // Roast 강도 레이블 (0: 가장 약함 → 4: 가장 강함)
-const ROAST_LEVEL_LABELS = [
+const _ROAST_LEVEL_LABELS = [
   { label: 'Kind', description: '가장 약한 피드백 - 격려와 긍정 강조', emoji: '😊' },
   { label: 'Mild', description: '약한 피드백 - 친절하고 부드러운 제안', emoji: '🙂' },
   { label: 'Medium', description: '중간 피드백 - 균형 잡힌 현실적 평가', emoji: '😐' },

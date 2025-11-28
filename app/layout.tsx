@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Inter, Source_Code_Pro } from "next/font/google";
 import { SafeArea } from "@coinbase/onchainkit/minikit";
 import { Toaster } from "sonner";
+import { NextIntlClientProvider } from "next-intl";
+import { getLocale, getMessages } from "next-intl/server";
 import { minikitConfig } from "../minikit.config";
 import { RootProvider } from "./rootProvider";
 import "./globals.css";
@@ -36,18 +38,23 @@ const sourceCodePro = Source_Code_Pro({
   subsets: ["latin"],
 });
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const locale = await getLocale();
+  const messages = await getMessages();
+
   return (
-    <html lang="en">
+    <html lang={locale}>
       <body className={`${inter.variable} ${sourceCodePro.variable}`}>
-        <RootProvider>
-          <SafeArea>{children}</SafeArea>
-          <Toaster position="top-center" richColors />
-        </RootProvider>
+        <NextIntlClientProvider locale={locale} messages={messages}>
+          <RootProvider>
+            <SafeArea>{children}</SafeArea>
+            <Toaster position="top-center" richColors />
+          </RootProvider>
+        </NextIntlClientProvider>
       </body>
     </html>
   );

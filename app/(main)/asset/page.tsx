@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { TrendingUp, TrendingDown, AlertTriangle, AlertCircle, ExternalLink, Wallet, ChevronDown, RefreshCw } from "lucide-react";
 import { useAccount } from "wagmi";
-import type { AssetsResponse, AssetsResponseData, CoinDetail, RiskSource, RiskLevel, Importance } from "@/app/api/wallet/types";
+import type { AssetsResponse, AssetsResponseData, RiskSource, RiskLevel, Importance } from "@/app/api/wallet/types";
 
 // 위험도에 따른 아이콘 및 색상
 const getRiskIcon = (riskLevel: RiskLevel) => {

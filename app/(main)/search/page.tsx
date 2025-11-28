@@ -2,8 +2,9 @@
 
 import { useState, useRef, useMemo, useCallback } from "react";
 import { Search, Wallet, TrendingUp, TrendingDown, ArrowUpRight, ArrowDownRight, PieChart, Activity, ChevronDown, ChevronUp, RefreshCw } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useUserSettings } from "@/app/hooks/useUserSettings";
-import type { AnalyzeResponse, AnalyzeResponseData, TradeEvaluationItem } from "@/app/api/wallet/types";
+import type { AnalyzeResponse, AnalyzeResponseData } from "@/app/api/wallet/types";
 
 // 점수에 따른 색상 계산 (0-10)
 const getScoreColor = (score: number) => {
@@ -30,18 +31,6 @@ const getEvaluationBadge = (evaluation: string) => {
       return "badge-error";
     default:
       return "badge-warning";
-  }
-};
-
-// 평가 텍스트
-const getEvaluationText = (evaluation: string) => {
-  switch (evaluation) {
-    case "good":
-      return "좋음";
-    case "bad":
-      return "주의";
-    default:
-      return "보통";
   }
 };
 
@@ -104,6 +93,10 @@ const SearchResultSkeleton = () => (
 
 export default function SearchPage() {
   const { settings } = useUserSettings();
+  const t = useTranslations("search");
+  const tHome = useTranslations("home");
+  const tError = useTranslations("error");
+  const tCommon = useTranslations("common");
   
   // 검색 상태
   const [walletAddress, setWalletAddress] = useState("");
@@ -117,6 +110,18 @@ export default function SearchPage() {
   // UI 상태
   const [isTradesExpanded, setIsTradesExpanded] = useState(false);
   const dateRefs = useRef<Record<string, HTMLDivElement | null>>({});
+
+  // 평가 텍스트 (번역)
+  const getEvaluationText = (evaluation: string) => {
+    switch (evaluation) {
+      case "good":
+        return tHome("evaluationGood");
+      case "bad":
+        return tHome("evaluationBad");
+      default:
+        return tHome("evaluationNormal");
+    }
+  };
 
   // 검색 API 호출
   const handleSearch = useCallback(async () => {
@@ -155,15 +160,15 @@ export default function SearchPage() {
       if (result.success && result.data) {
         setSearchResult(result.data);
       } else {
-        setError(result.error?.message || '지갑 분석에 실패했습니다.');
+        setError(result.error?.message || t("searchFailed"));
       }
     } catch (err) {
       console.error('API 호출 오류:', err);
-      setError('서버 연결에 실패했습니다.');
+      setError(tError("serverConnection"));
     } finally {
       setIsLoading(false);
     }
-  }, [walletAddress, settings]);
+  }, [walletAddress, settings, t, tError]);
 
   const handleReset = () => {
     setIsSearching(false);
@@ -233,22 +238,22 @@ export default function SearchPage() {
           {/* 제목 영역 */}
           <h2 className="card-title text-lg flex items-center gap-2">
             <Search className="w-5 h-5 text-primary" />
-            지갑 평가 검색
+            {t("title")}
           </h2>
 
           {/* 설명 영역 */}
           <p className="text-sm text-base-content/70">
-            다른 사용자의 지갑 주소를 입력하여 투자 성향과 포트폴리오를 분석해보세요.
+            {t("description")}
           </p>
 
           {/* 입력 영역 */}
           <div className="form-control mt-4">
             <label className="label">
-              <span className="label-text">지갑 주소</span>
+              <span className="label-text">{t("walletAddress")}</span>
             </label>
             <input
               type="text"
-              placeholder="0x... 또는 ENS 주소 입력"
+              placeholder={t("placeholder")}
               className="input input-bordered w-full"
               value={walletAddress}
               onChange={(e) => setWalletAddress(e.target.value)}
@@ -264,7 +269,7 @@ export default function SearchPage() {
               disabled={!walletAddress.trim()}
             >
               <Search className="w-4 h-4" />
-              검색하기
+              {t("searchButton")}
             </button>
           </div>
         </div>
@@ -282,7 +287,7 @@ export default function SearchPage() {
               </span>
             </div>
             <button className="btn btn-ghost btn-sm" onClick={handleReset}>
-              다른 지갑 검색
+              {t("searchOther")}
             </button>
           </div>
 
@@ -291,11 +296,11 @@ export default function SearchPage() {
             <div className="card bg-base-200 shadow-lg mb-6">
               <div className="card-body text-center">
                 <div className="text-error text-4xl mb-4">⚠️</div>
-                <h2 className="card-title justify-center">오류가 발생했습니다</h2>
+                <h2 className="card-title justify-center">{tError("title")}</h2>
                 <p className="text-sm text-base-content/70">{error}</p>
                 <button className="btn btn-primary mt-4" onClick={handleSearch}>
                   <RefreshCw className="w-4 h-4" />
-                  다시 시도
+                  {tCommon("retry")}
                 </button>
               </div>
             </div>
@@ -311,7 +316,7 @@ export default function SearchPage() {
                   <div className="card-body">
                     <h2 className="card-title text-lg flex items-center gap-2">
                       <Activity className="w-5 h-5 text-primary" />
-                      지갑 건강도
+                      {tHome("walletHealth")}
                     </h2>
 
                     {/* 점수 바와 숫자 표시 */}
@@ -327,9 +332,9 @@ export default function SearchPage() {
                           />
                         </div>
                         <div className="flex justify-between text-xs mt-1 text-base-content/60">
-                          <span>위험</span>
-                          <span>보통</span>
-                          <span>양호</span>
+                          <span>{tHome("risk")}</span>
+                          <span>{tHome("normal")}</span>
+                          <span>{tHome("good")}</span>
                         </div>
                       </div>
                       <div className={`text-4xl font-bold ${getScoreColor(aiEvaluation.overallScore)}`}>
@@ -361,8 +366,8 @@ export default function SearchPage() {
                   <div className="card-body">
                     <h2 className="card-title text-lg flex items-center gap-2">
                       <Wallet className="w-5 h-5 text-secondary" />
-                      최근 거래 평가
-                      <span className="text-xs text-base-content/60 font-normal">(최근 7일)</span>
+                      {tHome("recentTrades")}
+                      <span className="text-xs text-base-content/60 font-normal">({tHome("last7Days")})</span>
                     </h2>
 
                     {/* 거래 내역이 없는 경우 */}
@@ -371,8 +376,8 @@ export default function SearchPage() {
                         <div className="w-16 h-16 rounded-full bg-base-100 flex items-center justify-center mb-4">
                           <Wallet className="w-8 h-8 text-base-content/30" />
                         </div>
-                        <p className="text-base-content/60 text-sm">최근 7일간 거래 내역이 없습니다</p>
-                        <p className="text-base-content/40 text-xs mt-1">거래가 발생하면 여기에 표시됩니다</p>
+                        <p className="text-base-content/60 text-sm">{tHome("noTrades")}</p>
+                        <p className="text-base-content/40 text-xs mt-1">{tHome("tradesWillShow")}</p>
                       </div>
                     ) : (
                       <>
@@ -437,7 +442,7 @@ export default function SearchPage() {
                                   <div className="flex items-center gap-2 mb-1">
                                     <span className="font-bold">{trade.coin}</span>
                                     <span className={`badge badge-xs ${trade.type === "buy" ? "badge-success" : "badge-error"}`}>
-                                      {trade.type === "buy" ? "매수" : "매도"}
+                                      {trade.type === "buy" ? tHome("buy") : tHome("sell")}
                                     </span>
                                     <span className={`badge badge-xs ${getEvaluationBadge(trade.evaluation)}`}>
                                       {getEvaluationText(trade.evaluation)}
@@ -467,12 +472,12 @@ export default function SearchPage() {
                           {isTradesExpanded ? (
                             <>
                               <ChevronUp className="w-4 h-4" />
-                              접기
+                              {tHome("collapse")}
                             </>
                           ) : (
                             <>
                               <ChevronDown className="w-4 h-4" />
-                              {recentTrades.length - INITIAL_TRADES_COUNT}개 더보기
+                              {recentTrades.length - INITIAL_TRADES_COUNT}{tHome("showMore")}
                             </>
                           )}
                         </button>
@@ -487,17 +492,17 @@ export default function SearchPage() {
                   <div className="card-body">
                     <h2 className="card-title text-lg flex items-center gap-2">
                       <PieChart className="w-5 h-5 text-accent" />
-                      포트폴리오 현황
+                      {tHome("portfolio")}
                     </h2>
 
                     {/* 총 자산 */}
                     <div className="stats bg-base-100 shadow">
                       <div className="stat">
-                        <div className="stat-title">총 평가금액</div>
+                        <div className="stat-title">{tHome("totalValue")}</div>
                         <div className="stat-value text-primary">${totalValue.toLocaleString()}</div>
                         <div className={`stat-desc flex items-center gap-1 ${totalChange24h >= 0 ? "text-success" : "text-error"}`}>
                           {totalChange24h >= 0 ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
-                          전일 대비 {totalChange24h >= 0 ? "+" : ""}{totalChange24h.toFixed(1)}%
+                          {tHome("dayChange")} {totalChange24h >= 0 ? "+" : ""}{totalChange24h.toFixed(1)}%
                         </div>
                       </div>
                     </div>
@@ -508,8 +513,8 @@ export default function SearchPage() {
                         <div className="w-16 h-16 rounded-full bg-base-100 flex items-center justify-center mb-4">
                           <PieChart className="w-8 h-8 text-base-content/30" />
                         </div>
-                        <p className="text-base-content/60 text-sm">보유 중인 자산이 없습니다</p>
-                        <p className="text-base-content/40 text-xs mt-1">토큰을 보유하면 여기에 표시됩니다</p>
+                        <p className="text-base-content/60 text-sm">{tHome("noAssets")}</p>
+                        <p className="text-base-content/40 text-xs mt-1">{tHome("assetsWillShow")}</p>
                       </div>
                     ) : (
                       <>
@@ -567,17 +572,17 @@ export default function SearchPage() {
                         ))}
                         {/* 코인 개수 표시 */}
                         <div className="text-right">
-                          <span className="text-xs text-base-content/50">총 {portfolio.coins.length}개 코인 보유</span>
+                          <span className="text-xs text-base-content/50">{tHome("totalCoins", { count: portfolio.coins.length })}</span>
                         </div>
                       </div>
 
                       {/* 투자 성향 */}
                       {investStyle && (
                         <>
-                          <div className="divider">투자 성향 분석</div>
+                          <div className="divider">{tHome("investStyleAnalysis")}</div>
                           <div className="grid grid-cols-2 gap-3">
                             <div className="bg-base-100 p-3 rounded-lg text-center">
-                              <div className="text-xs text-base-content/60 mb-1">위험도</div>
+                              <div className="text-xs text-base-content/60 mb-1">{tHome("riskLevel")}</div>
                               <div className={`badge badge-lg ${
                                 investStyle.riskLevel === '높음' ? 'badge-error' : 
                                 investStyle.riskLevel === '중간' ? 'badge-warning' : 'badge-success'
@@ -586,15 +591,15 @@ export default function SearchPage() {
                               </div>
                             </div>
                             <div className="bg-base-100 p-3 rounded-lg text-center">
-                              <div className="text-xs text-base-content/60 mb-1">거래 빈도</div>
+                              <div className="text-xs text-base-content/60 mb-1">{tHome("tradingFrequency")}</div>
                               <div className="text-sm font-semibold">{investStyle.tradingFrequency}</div>
                             </div>
                             <div className="bg-base-100 p-3 rounded-lg text-center">
-                              <div className="text-xs text-base-content/60 mb-1">평균 보유기간</div>
+                              <div className="text-xs text-base-content/60 mb-1">{tHome("avgHoldingPeriod")}</div>
                               <div className="text-sm font-semibold">{investStyle.avgHoldingPeriod}</div>
                             </div>
                             <div className="bg-base-100 p-3 rounded-lg text-center">
-                              <div className="text-xs text-base-content/60 mb-1">선호 코인</div>
+                              <div className="text-xs text-base-content/60 mb-1">{tHome("preferredCoins")}</div>
                               <div className="flex gap-1 justify-center flex-wrap">
                                 {investStyle.preferredCoins && investStyle.preferredCoins.length > 0 ? (
                                   investStyle.preferredCoins.slice(0, 3).map((coin) => (
@@ -603,7 +608,7 @@ export default function SearchPage() {
                                     </span>
                                   ))
                                 ) : (
-                                  <span className="text-xs text-base-content/40">데이터 없음</span>
+                                  <span className="text-xs text-base-content/40">{tHome("noDataAvailable")}</span>
                                 )}
                               </div>
                             </div>
@@ -635,7 +640,7 @@ export default function SearchPage() {
                           </svg>
                           <div>
                             <h3 className="font-bold text-sm">
-                              {investStyle?.riskLevel === '높음' ? '주의 필요' : '투자 조언'}
+                              {investStyle?.riskLevel === '높음' ? tHome("attentionNeeded") : tHome("investmentAdvice")}
                             </h3>
                             <div className="text-xs">
                               {aiEvaluation.portfolioAdvice}

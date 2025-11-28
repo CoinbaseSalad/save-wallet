@@ -530,7 +530,7 @@ function formatSecurityInfo(security: GoPlusTokenSecurity | undefined): Security
 // 포트폴리오 분석 요약 생성
 function generatePortfolioSummary(
   coins: CoinDetail[],
-  totalValue: number
+  _totalValue: number
 ): string[] {
   const summaries: string[] = [];
 

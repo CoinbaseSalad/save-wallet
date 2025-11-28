@@ -1,0 +1,146 @@
+{
+  "common": {
+    "loading": "Loading...",
+    "error": "An error occurred",
+    "retry": "Retry",
+    "save": "Save",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "close": "Close",
+    "back": "Back",
+    "next": "Next",
+    "done": "Done",
+    "search": "Search",
+    "noData": "No data available"
+  },
+  "nav": {
+    "home": "Home",
+    "asset": "Asset",
+    "search": "Search",
+    "setting": "Setting"
+  },
+  "header": {
+    "logout": "Logout"
+  },
+  "wallet": {
+    "connect": "Connect Your Wallet",
+    "connectDescription": "Please connect your wallet to analyze your portfolio."
+  },
+  "onboard": {
+    "title": "Profile Setup",
+    "description": "Enter your information for more accurate investment evaluation",
+    "complete": "Complete Setup",
+    "saving": "Saving settings...",
+    "settingNote": "You can change settings anytime in your profile",
+    "saveFailed": "Failed to save settings."
+  },
+  "setting": {
+    "title": "Settings",
+    "description": "Change settings used for investment evaluation",
+    "saveChanges": "Save Changes",
+    "saving": "Saving...",
+    "saved": "Settings saved!",
+    "saveFailed": "Failed to save settings.",
+    "dangerZone": "Danger Zone",
+    "resetAccount": "Reset Account",
+    "resetDescription": "Reset all settings and data, then logout.",
+    "resetAndLogout": "Reset & Logout",
+    "resetConfirm": "Are you sure you want to reset?",
+    "resetWarning": "All settings will be deleted.",
+    "resetting": "Resetting...",
+    "language": "Language",
+    "languageDescription": "Select app display language"
+  },
+  "investmentStyle": {
+    "title": "Investment Style",
+    "stable": "Conservative",
+    "stableDescription": "Prioritizes capital preservation, accepting lower returns.",
+    "conservative": "Moderately Conservative",
+    "conservativeDescription": "Seeks stable returns, can tolerate minor losses.",
+    "neutral": "Balanced",
+    "neutralDescription": "Pursues a balance between risk and return.",
+    "active": "Growth",
+    "activeDescription": "Can tolerate significant risk for higher returns.",
+    "aggressive": "Aggressive",
+    "aggressiveDescription": "Accepts high volatility and loss risk for maximum returns.",
+    "stableLabel": "Safe",
+    "neutralLabel": "Neutral",
+    "aggressiveLabel": "Aggressive"
+  },
+  "salaryAllocation": {
+    "title": "Salary Allocation",
+    "livingExpense": "Living Expense",
+    "investment": "Investment",
+    "savings": "Savings",
+    "livingExpenseRatio": "Living Expense Ratio",
+    "investmentRatio": "Investment Ratio",
+    "autoSavingsRatio": "Auto Savings Ratio"
+  },
+  "roastLevel": {
+    "title": "Evaluation Style (Roast Level)",
+    "kind": "Kind",
+    "kindDescription": "Gentlest feedback. Emphasizes encouragement and positives.",
+    "mild": "Mild",
+    "mildDescription": "Gentle feedback. Friendly but suggests improvements softly.",
+    "medium": "Medium",
+    "mediumDescription": "Moderate intensity. Provides balanced, realistic feedback.",
+    "spicy": "Spicy",
+    "spicyDescription": "Strong feedback. Direct and sharp criticism.",
+    "hot": "Hot",
+    "hotDescription": "Strongest feedback. Unfiltered roast style for facing reality.",
+    "weakLabel": "Weak (Kind) 🤗",
+    "mediumLabel": "Medium",
+    "strongLabel": "Strong (Hot) 🔥"
+  },
+  "home": {
+    "walletHealth": "Wallet Health",
+    "risk": "Risk",
+    "normal": "Normal",
+    "good": "Good",
+    "recentTrades": "Recent Trade Evaluation",
+    "last7Days": "Last 7 days",
+    "noTrades": "No trades in the last 7 days",
+    "tradesWillShow": "Trades will appear here",
+    "buy": "Buy",
+    "sell": "Sell",
+    "evaluationGood": "Good",
+    "evaluationBad": "Caution",
+    "evaluationNormal": "Normal",
+    "showMore": " more",
+    "collapse": "Collapse",
+    "portfolio": "Portfolio Status",
+    "totalValue": "Total Value",
+    "dayChange": "24h Change",
+    "noAssets": "No assets held",
+    "assetsWillShow": "Tokens will appear here",
+    "totalCoins": "Total {count} coins held",
+    "investStyleAnalysis": "Investment Style Analysis",
+    "riskLevel": "Risk Level",
+    "tradingFrequency": "Trading Frequency",
+    "avgHoldingPeriod": "Avg Holding Period",
+    "preferredCoins": "Preferred Coins",
+    "noDataAvailable": "No data",
+    "investmentAdvice": "Investment Advice",
+    "attentionNeeded": "Attention Needed",
+    "riskHigh": "High",
+    "riskMedium": "Medium",
+    "riskLow": "Low"
+  },
+  "search": {
+    "title": "Wallet Evaluation Search",
+    "description": "Enter another user's wallet address to analyze their investment style and portfolio.",
+    "walletAddress": "Wallet Address",
+    "placeholder": "Enter 0x... or ENS address",
+    "searchButton": "Search",
+    "searchOther": "Search Another Wallet",
+    "searchFailed": "Failed to analyze wallet."
+  },
+  "error": {
+    "title": "An error occurred",
+    "serverConnection": "Failed to connect to server.",
+    "fetchFailed": "Failed to fetch analysis data.",
+    "noData": "No data",
+    "noDataDescription": "Unable to fetch wallet analysis data."
+  }
+}
+

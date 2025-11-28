@@ -1,0 +1,146 @@
+{
+  "common": {
+    "loading": "로딩 중...",
+    "error": "오류가 발생했습니다",
+    "retry": "다시 시도",
+    "save": "저장",
+    "cancel": "취소",
+    "confirm": "확인",
+    "close": "닫기",
+    "back": "뒤로",
+    "next": "다음",
+    "done": "완료",
+    "search": "검색",
+    "noData": "데이터가 없습니다"
+  },
+  "nav": {
+    "home": "홈",
+    "asset": "자산",
+    "search": "검색",
+    "setting": "설정"
+  },
+  "header": {
+    "logout": "로그아웃"
+  },
+  "wallet": {
+    "connect": "지갑을 연결해주세요",
+    "connectDescription": "지갑 분석을 위해 먼저 지갑을 연결해주세요."
+  },
+  "onboard": {
+    "title": "프로필 설정",
+    "description": "더 정확한 투자 평가를 위해 정보를 입력해주세요",
+    "complete": "설정 완료",
+    "saving": "설정 저장 중...",
+    "settingNote": "설정은 프로필에서 언제든지 변경할 수 있습니다",
+    "saveFailed": "설정 저장에 실패했습니다."
+  },
+  "setting": {
+    "title": "설정",
+    "description": "투자 평가에 사용되는 설정을 변경할 수 있습니다",
+    "saveChanges": "변경사항 저장",
+    "saving": "저장 중...",
+    "saved": "설정이 저장되었습니다!",
+    "saveFailed": "설정 저장에 실패했습니다.",
+    "dangerZone": "위험 영역",
+    "resetAccount": "계정 초기화",
+    "resetDescription": "모든 설정과 데이터를 초기화하고 로그아웃합니다.",
+    "resetAndLogout": "초기화 및 로그아웃",
+    "resetConfirm": "정말 초기화하시겠습니까?",
+    "resetWarning": "모든 설정이 삭제됩니다.",
+    "resetting": "초기화 중...",
+    "language": "언어",
+    "languageDescription": "앱 표시 언어를 선택하세요"
+  },
+  "investmentStyle": {
+    "title": "투자 성향",
+    "stable": "안정형",
+    "stableDescription": "원금 보존을 최우선으로 하며, 낮은 수익률도 감수합니다.",
+    "conservative": "안정추구형",
+    "conservativeDescription": "안정적인 수익을 추구하며, 소폭의 손실은 감수할 수 있습니다.",
+    "neutral": "위험중립형",
+    "neutralDescription": "적정한 위험과 수익의 균형을 추구합니다.",
+    "active": "적극투자형",
+    "activeDescription": "높은 수익을 위해 상당한 위험을 감수할 수 있습니다.",
+    "aggressive": "공격투자형",
+    "aggressiveDescription": "최대 수익을 위해 높은 변동성과 손실 위험을 감수합니다.",
+    "stableLabel": "안정",
+    "neutralLabel": "중립",
+    "aggressiveLabel": "공격"
+  },
+  "salaryAllocation": {
+    "title": "급여 배분 비율",
+    "livingExpense": "생활비",
+    "investment": "투자",
+    "savings": "저축",
+    "livingExpenseRatio": "생활비 비율",
+    "investmentRatio": "투자 비율",
+    "autoSavingsRatio": "자동 저축 비율"
+  },
+  "roastLevel": {
+    "title": "평가 스타일 (Roast 강도)",
+    "kind": "Kind",
+    "kindDescription": "가장 부드러운 피드백. 격려와 긍정적인 면을 강조합니다.",
+    "mild": "Mild",
+    "mildDescription": "약한 피드백. 친절하지만 개선점도 부드럽게 제안합니다.",
+    "medium": "Medium",
+    "mediumDescription": "중간 강도. 균형 잡힌 현실적인 피드백을 제공합니다.",
+    "spicy": "Spicy",
+    "spicyDescription": "강한 피드백. 직설적이고 날카로운 지적을 합니다.",
+    "hot": "Hot",
+    "hotDescription": "가장 강한 피드백. 거침없는 로스트 스타일로 현실을 직시하게 합니다.",
+    "weakLabel": "약함 (Kind) 🤗",
+    "mediumLabel": "Medium",
+    "strongLabel": "강함 (Hot) 🔥"
+  },
+  "home": {
+    "walletHealth": "지갑 건강도",
+    "risk": "위험",
+    "normal": "보통",
+    "good": "양호",
+    "recentTrades": "최근 거래 평가",
+    "last7Days": "최근 7일",
+    "noTrades": "최근 7일간 거래 내역이 없습니다",
+    "tradesWillShow": "거래가 발생하면 여기에 표시됩니다",
+    "buy": "매수",
+    "sell": "매도",
+    "evaluationGood": "좋음",
+    "evaluationBad": "주의",
+    "evaluationNormal": "보통",
+    "showMore": "개 더보기",
+    "collapse": "접기",
+    "portfolio": "포트폴리오 현황",
+    "totalValue": "총 평가금액",
+    "dayChange": "전일 대비",
+    "noAssets": "보유 중인 자산이 없습니다",
+    "assetsWillShow": "토큰을 보유하면 여기에 표시됩니다",
+    "totalCoins": "총 {count}개 코인 보유",
+    "investStyleAnalysis": "투자 성향 분석",
+    "riskLevel": "위험도",
+    "tradingFrequency": "거래 빈도",
+    "avgHoldingPeriod": "평균 보유기간",
+    "preferredCoins": "선호 코인",
+    "noDataAvailable": "데이터 없음",
+    "investmentAdvice": "투자 조언",
+    "attentionNeeded": "주의 필요",
+    "riskHigh": "높음",
+    "riskMedium": "중간",
+    "riskLow": "낮음"
+  },
+  "search": {
+    "title": "지갑 평가 검색",
+    "description": "다른 사용자의 지갑 주소를 입력하여 투자 성향과 포트폴리오를 분석해보세요.",
+    "walletAddress": "지갑 주소",
+    "placeholder": "0x... 또는 ENS 주소 입력",
+    "searchButton": "검색하기",
+    "searchOther": "다른 지갑 검색",
+    "searchFailed": "지갑 분석에 실패했습니다."
+  },
+  "error": {
+    "title": "오류가 발생했습니다",
+    "serverConnection": "서버 연결에 실패했습니다.",
+    "fetchFailed": "분석 데이터를 가져오는데 실패했습니다.",
+    "noData": "데이터가 없습니다",
+    "noDataDescription": "지갑 분석 데이터를 가져올 수 없습니다."
+  }
+}
+

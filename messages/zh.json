@@ -1,0 +1,146 @@
+{
+  "common": {
+    "loading": "加载中...",
+    "error": "发生错误",
+    "retry": "重试",
+    "save": "保存",
+    "cancel": "取消",
+    "confirm": "确认",
+    "close": "关闭",
+    "back": "返回",
+    "next": "下一步",
+    "done": "完成",
+    "search": "搜索",
+    "noData": "暂无数据"
+  },
+  "nav": {
+    "home": "首页",
+    "asset": "资产",
+    "search": "搜索",
+    "setting": "设置"
+  },
+  "header": {
+    "logout": "退出登录"
+  },
+  "wallet": {
+    "connect": "请连接钱包",
+    "connectDescription": "请先连接钱包以分析您的投资组合。"
+  },
+  "onboard": {
+    "title": "个人资料设置",
+    "description": "请输入您的信息以获得更准确的投资评估",
+    "complete": "完成设置",
+    "saving": "正在保存设置...",
+    "settingNote": "您可以随时在个人资料中更改设置",
+    "saveFailed": "保存设置失败。"
+  },
+  "setting": {
+    "title": "设置",
+    "description": "更改用于投资评估的设置",
+    "saveChanges": "保存更改",
+    "saving": "保存中...",
+    "saved": "设置已保存！",
+    "saveFailed": "保存设置失败。",
+    "dangerZone": "危险区域",
+    "resetAccount": "重置账户",
+    "resetDescription": "重置所有设置和数据，然后退出登录。",
+    "resetAndLogout": "重置并退出",
+    "resetConfirm": "确定要重置吗？",
+    "resetWarning": "所有设置将被删除。",
+    "resetting": "重置中...",
+    "language": "语言",
+    "languageDescription": "选择应用显示语言"
+  },
+  "investmentStyle": {
+    "title": "投资风格",
+    "stable": "保守型",
+    "stableDescription": "以本金保值为首要目标，接受较低回报。",
+    "conservative": "稳健型",
+    "conservativeDescription": "追求稳定收益，可以承受小幅损失。",
+    "neutral": "平衡型",
+    "neutralDescription": "追求风险与收益的平衡。",
+    "active": "成长型",
+    "activeDescription": "为了更高回报可以承担较大风险。",
+    "aggressive": "激进型",
+    "aggressiveDescription": "为了最大收益接受高波动性和损失风险。",
+    "stableLabel": "稳健",
+    "neutralLabel": "平衡",
+    "aggressiveLabel": "激进"
+  },
+  "salaryAllocation": {
+    "title": "工资分配比例",
+    "livingExpense": "生活费",
+    "investment": "投资",
+    "savings": "储蓄",
+    "livingExpenseRatio": "生活费比例",
+    "investmentRatio": "投资比例",
+    "autoSavingsRatio": "自动储蓄比例"
+  },
+  "roastLevel": {
+    "title": "评价风格（辣度）",
+    "kind": "温和",
+    "kindDescription": "最温和的反馈。强调鼓励和积极方面。",
+    "mild": "轻微",
+    "mildDescription": "温和的反馈。友善但会温和地提出改进建议。",
+    "medium": "中等",
+    "mediumDescription": "中等强度。提供平衡、现实的反馈。",
+    "spicy": "辛辣",
+    "spicyDescription": "强烈的反馈。直接而尖锐的批评。",
+    "hot": "火辣",
+    "hotDescription": "最强烈的反馈。不加过滤的吐槽风格让您面对现实。",
+    "weakLabel": "温和 (Kind) 🤗",
+    "mediumLabel": "中等",
+    "strongLabel": "火辣 (Hot) 🔥"
+  },
+  "home": {
+    "walletHealth": "钱包健康度",
+    "risk": "风险",
+    "normal": "正常",
+    "good": "良好",
+    "recentTrades": "最近交易评估",
+    "last7Days": "最近7天",
+    "noTrades": "最近7天没有交易记录",
+    "tradesWillShow": "交易将显示在这里",
+    "buy": "买入",
+    "sell": "卖出",
+    "evaluationGood": "良好",
+    "evaluationBad": "注意",
+    "evaluationNormal": "正常",
+    "showMore": "个更多",
+    "collapse": "收起",
+    "portfolio": "投资组合状态",
+    "totalValue": "总价值",
+    "dayChange": "24小时变化",
+    "noAssets": "没有持有资产",
+    "assetsWillShow": "代币将显示在这里",
+    "totalCoins": "共持有 {count} 种代币",
+    "investStyleAnalysis": "投资风格分析",
+    "riskLevel": "风险等级",
+    "tradingFrequency": "交易频率",
+    "avgHoldingPeriod": "平均持有期",
+    "preferredCoins": "偏好币种",
+    "noDataAvailable": "暂无数据",
+    "investmentAdvice": "投资建议",
+    "attentionNeeded": "需要关注",
+    "riskHigh": "高",
+    "riskMedium": "中",
+    "riskLow": "低"
+  },
+  "search": {
+    "title": "钱包评估搜索",
+    "description": "输入其他用户的钱包地址，分析其投资风格和投资组合。",
+    "walletAddress": "钱包地址",
+    "placeholder": "输入 0x... 或 ENS 地址",
+    "searchButton": "搜索",
+    "searchOther": "搜索其他钱包",
+    "searchFailed": "钱包分析失败。"
+  },
+  "error": {
+    "title": "发生错误",
+    "serverConnection": "服务器连接失败。",
+    "fetchFailed": "获取分析数据失败。",
+    "noData": "暂无数据",
+    "noDataDescription": "无法获取钱包分析数据。"
+  }
+}
+

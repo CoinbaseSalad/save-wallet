@@ -4,16 +4,19 @@ import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Settings, Save, RotateCcw, LogOut, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 import { useUserSettings } from "@/app/hooks/useUserSettings";
 import { useDisconnect } from "wagmi";
 import InvestmentStyleSlider from "@/app/components/InvestmentStyleSlider";
 import SalaryAllocationSlider from "@/app/components/SalaryAllocationSlider";
 import RoastLevelSlider from "@/app/components/RoastLevelSlider";
+import LanguageSelector from "@/app/components/LanguageSelector";
 
 export default function SettingPage() {
   const router = useRouter();
   const resetModalRef = useRef<HTMLDialogElement>(null);
   const { disconnect } = useDisconnect();
+  const t = useTranslations("setting");
 
   // useUserSettings 훅 사용
   const { settings, saveSettings, resetSettings, isLoading } = useUserSettings();
@@ -57,9 +60,9 @@ export default function SettingPage() {
 
     setIsSaving(false);
     if (success) {
-      toast.success("설정이 저장되었습니다!");
+      toast.success(t("saved"));
     } else {
-      toast.error("설정 저장에 실패했습니다.");
+      toast.error(t("saveFailed"));
     }
   };
 
@@ -86,12 +89,15 @@ export default function SettingPage() {
       <div className="text-center py-4">
         <h1 className="text-2xl font-bold flex items-center justify-center gap-2">
           <Settings className="w-6 h-6 text-primary" />
-          설정
+          {t("title")}
         </h1>
         <p className="text-sm text-base-content/60 mt-2">
-          투자 평가에 사용되는 설정을 변경할 수 있습니다
+          {t("description")}
         </p>
       </div>
+
+      {/* 언어 설정 */}
+      <LanguageSelector />
 
       {/* 투자 성향 영역 */}
       <InvestmentStyleSlider
@@ -123,29 +129,29 @@ export default function SettingPage() {
           {isSaving ? (
             <>
               <span className="loading loading-spinner"></span>
-              저장 중...
+              {t("saving")}
             </>
           ) : (
             <>
               <Save className="w-5 h-5" />
-              변경사항 저장
+              {t("saveChanges")}
             </>
           )}
         </button>
       </div>
 
       {/* 구분선 */}
-      <div className="divider text-base-content/40">위험 영역</div>
+      <div className="divider text-base-content/40">{t("dangerZone")}</div>
 
       {/* 초기화 버튼 */}
       <div className="card bg-error/10 border border-error/30">
         <div className="card-body">
           <h3 className="font-bold text-error flex items-center gap-2">
             <AlertTriangle className="w-5 h-5" />
-            계정 초기화
+            {t("resetAccount")}
           </h3>
           <p className="text-sm text-base-content/70">
-            모든 설정과 데이터를 초기화하고 로그아웃합니다.
+            {t("resetDescription")}
           </p>
           <div className="card-actions justify-end mt-2">
             <button
@@ -153,7 +159,7 @@ export default function SettingPage() {
               onClick={() => resetModalRef.current?.showModal()}
             >
               <RotateCcw className="w-4 h-4" />
-              초기화 및 로그아웃
+              {t("resetAndLogout")}
             </button>
           </div>
         </div>
@@ -164,14 +170,14 @@ export default function SettingPage() {
         <div className="modal-box">
           <h3 className="font-bold text-lg text-error flex items-center gap-2">
             <AlertTriangle className="w-6 h-6" />
-            정말 초기화하시겠습니까?
+            {t("resetConfirm")}
           </h3>
           <p className="py-4 text-base-content/70">
-            모든 설정이 삭제됩니다.
+            {t("resetWarning")}
           </p>
           <div className="modal-action">
             <form method="dialog">
-              <button className="btn btn-ghost">취소</button>
+              <button className="btn btn-ghost">{t("cancel") || "취소"}</button>
             </form>
             <button
               className="btn btn-error"
@@ -181,12 +187,12 @@ export default function SettingPage() {
               {isResetting ? (
                 <>
                   <span className="loading loading-spinner"></span>
-                  초기화 중...
+                  {t("resetting")}
                 </>
               ) : (
                 <>
                   <LogOut className="w-4 h-4" />
-                  초기화 및 로그아웃
+                  {t("resetAndLogout")}
                 </>
               )}
             </button>

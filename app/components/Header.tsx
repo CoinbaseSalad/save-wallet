@@ -3,6 +3,7 @@
 import { LogOut, Wallet } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useAccount, useDisconnect } from "wagmi";
+import LanguageSelector from "./LanguageSelector";
 
 export default function Header() {
   const router = useRouter();
@@ -24,10 +25,15 @@ export default function Header() {
 
   return (
     <div className="flex justify-between items-center bg-transparent py-4 px-4">
-      <Wallet className="w-4 h-4 text-green-500" />
-      {/* 지갑 주소 표시 (축약형) */}
-      {formatAddress(address)}
-      <LogOut className="w-4 h-4 cursor-pointer" onClick={handleLogout} />
+      <div className="flex items-center gap-2">
+        <Wallet className="w-4 h-4 text-green-500" />
+        {/* 지갑 주소 표시 (축약형) */}
+        <span className="text-sm">{formatAddress(address)}</span>
+      </div>
+      <div className="flex items-center gap-2">
+        <LanguageSelector compact />
+        <LogOut className="w-4 h-4 cursor-pointer" onClick={handleLogout} />
+      </div>
     </div>
   );
 }

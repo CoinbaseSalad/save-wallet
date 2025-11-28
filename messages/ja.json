@@ -1,0 +1,146 @@
+{
+  "common": {
+    "loading": "読み込み中...",
+    "error": "エラーが発生しました",
+    "retry": "再試行",
+    "save": "保存",
+    "cancel": "キャンセル",
+    "confirm": "確認",
+    "close": "閉じる",
+    "back": "戻る",
+    "next": "次へ",
+    "done": "完了",
+    "search": "検索",
+    "noData": "データがありません"
+  },
+  "nav": {
+    "home": "ホーム",
+    "asset": "資産",
+    "search": "検索",
+    "setting": "設定"
+  },
+  "header": {
+    "logout": "ログアウト"
+  },
+  "wallet": {
+    "connect": "ウォレットを接続してください",
+    "connectDescription": "ポートフォリオを分析するには、まずウォレットを接続してください。"
+  },
+  "onboard": {
+    "title": "プロフィール設定",
+    "description": "より正確な投資評価のために情報を入力してください",
+    "complete": "設定完了",
+    "saving": "設定を保存中...",
+    "settingNote": "設定はプロフィールでいつでも変更できます",
+    "saveFailed": "設定の保存に失敗しました。"
+  },
+  "setting": {
+    "title": "設定",
+    "description": "投資評価に使用される設定を変更できます",
+    "saveChanges": "変更を保存",
+    "saving": "保存中...",
+    "saved": "設定が保存されました！",
+    "saveFailed": "設定の保存に失敗しました。",
+    "dangerZone": "危険ゾーン",
+    "resetAccount": "アカウントリセット",
+    "resetDescription": "すべての設定とデータをリセットし、ログアウトします。",
+    "resetAndLogout": "リセット＆ログアウト",
+    "resetConfirm": "本当にリセットしますか？",
+    "resetWarning": "すべての設定が削除されます。",
+    "resetting": "リセット中...",
+    "language": "言語",
+    "languageDescription": "アプリの表示言語を選択"
+  },
+  "investmentStyle": {
+    "title": "投資スタイル",
+    "stable": "安定型",
+    "stableDescription": "元本保全を最優先し、低いリターンも受け入れます。",
+    "conservative": "安定追求型",
+    "conservativeDescription": "安定した収益を追求し、小幅な損失は許容できます。",
+    "neutral": "バランス型",
+    "neutralDescription": "リスクとリターンのバランスを追求します。",
+    "active": "成長型",
+    "activeDescription": "より高いリターンのために相当なリスクを許容できます。",
+    "aggressive": "積極型",
+    "aggressiveDescription": "最大のリターンのために高いボラティリティと損失リスクを受け入れます。",
+    "stableLabel": "安定",
+    "neutralLabel": "中立",
+    "aggressiveLabel": "積極"
+  },
+  "salaryAllocation": {
+    "title": "給与配分比率",
+    "livingExpense": "生活費",
+    "investment": "投資",
+    "savings": "貯蓄",
+    "livingExpenseRatio": "生活費比率",
+    "investmentRatio": "投資比率",
+    "autoSavingsRatio": "自動貯蓄比率"
+  },
+  "roastLevel": {
+    "title": "評価スタイル（ロースト強度）",
+    "kind": "Kind",
+    "kindDescription": "最も優しいフィードバック。励ましとポジティブな面を強調します。",
+    "mild": "Mild",
+    "mildDescription": "穏やかなフィードバック。親切ですが改善点も優しく提案します。",
+    "medium": "Medium",
+    "mediumDescription": "中程度の強度。バランスの取れた現実的なフィードバックを提供します。",
+    "spicy": "Spicy",
+    "spicyDescription": "強いフィードバック。直接的で鋭い指摘をします。",
+    "hot": "Hot",
+    "hotDescription": "最も強いフィードバック。遠慮のないローストスタイルで現実を直視させます。",
+    "weakLabel": "弱い (Kind) 🤗",
+    "mediumLabel": "Medium",
+    "strongLabel": "強い (Hot) 🔥"
+  },
+  "home": {
+    "walletHealth": "ウォレット健康度",
+    "risk": "リスク",
+    "normal": "普通",
+    "good": "良好",
+    "recentTrades": "最近の取引評価",
+    "last7Days": "過去7日間",
+    "noTrades": "過去7日間の取引履歴がありません",
+    "tradesWillShow": "取引があればここに表示されます",
+    "buy": "買い",
+    "sell": "売り",
+    "evaluationGood": "良い",
+    "evaluationBad": "注意",
+    "evaluationNormal": "普通",
+    "showMore": "件をもっと見る",
+    "collapse": "閉じる",
+    "portfolio": "ポートフォリオ状況",
+    "totalValue": "総評価額",
+    "dayChange": "前日比",
+    "noAssets": "保有資産がありません",
+    "assetsWillShow": "トークンを保有するとここに表示されます",
+    "totalCoins": "合計 {count} 種類のコインを保有",
+    "investStyleAnalysis": "投資スタイル分析",
+    "riskLevel": "リスクレベル",
+    "tradingFrequency": "取引頻度",
+    "avgHoldingPeriod": "平均保有期間",
+    "preferredCoins": "好みのコイン",
+    "noDataAvailable": "データなし",
+    "investmentAdvice": "投資アドバイス",
+    "attentionNeeded": "注意が必要",
+    "riskHigh": "高",
+    "riskMedium": "中",
+    "riskLow": "低"
+  },
+  "search": {
+    "title": "ウォレット評価検索",
+    "description": "他のユーザーのウォレットアドレスを入力して、投資スタイルとポートフォリオを分析します。",
+    "walletAddress": "ウォレットアドレス",
+    "placeholder": "0x... または ENS アドレスを入力",
+    "searchButton": "検索",
+    "searchOther": "別のウォレットを検索",
+    "searchFailed": "ウォレット分析に失敗しました。"
+  },
+  "error": {
+    "title": "エラーが発生しました",
+    "serverConnection": "サーバー接続に失敗しました。",
+    "fetchFailed": "分析データの取得に失敗しました。",
+    "noData": "データがありません",
+    "noDataDescription": "ウォレット分析データを取得できません。"
+  }
+}
+

@@ -1,6 +1,7 @@
 "use client";
 
 import { DollarSign, PiggyBank, TrendingUp } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 interface SalaryAllocationSliderProps {
   livingExpenseRatio: number;
@@ -15,6 +16,8 @@ export default function SalaryAllocationSlider({
   onLivingExpenseChange,
   onInvestmentChange,
 }: SalaryAllocationSliderProps) {
+  const t = useTranslations("salaryAllocation");
+
   // 저축 비율 계산
   const savingsRatio = 100 - livingExpenseRatio - investmentRatio;
 
@@ -23,7 +26,7 @@ export default function SalaryAllocationSlider({
       <div className="card-body">
         <h2 className="card-title text-lg flex items-center gap-2">
           <DollarSign className="w-5 h-5 text-secondary" />
-          급여 배분 비율
+          {t("title")}
         </h2>
 
         {/* 비율 시각화 */}
@@ -52,15 +55,15 @@ export default function SalaryAllocationSlider({
         <div className="flex justify-center gap-4 mt-3 text-xs">
           <div className="flex items-center gap-1.5">
             <div className="w-3 h-3 rounded-full bg-linear-to-r from-amber-400 to-amber-500" />
-            <span>생활비</span>
+            <span>{t("livingExpense")}</span>
           </div>
           <div className="flex items-center gap-1.5">
             <div className="w-3 h-3 rounded-full bg-linear-to-r from-blue-400 to-blue-500" />
-            <span>투자</span>
+            <span>{t("investment")}</span>
           </div>
           <div className="flex items-center gap-1.5">
             <div className="w-3 h-3 rounded-full bg-linear-to-r from-emerald-400 to-emerald-500" />
-            <span>저축</span>
+            <span>{t("savings")}</span>
           </div>
         </div>
 
@@ -69,7 +72,7 @@ export default function SalaryAllocationSlider({
           <label className="label">
             <span className="label-text flex items-center gap-2">
               <PiggyBank className="w-4 h-4" />
-              생활비 비율
+              {t("livingExpenseRatio")}
             </span>
             <span className="label-text-alt font-bold text-amber-500">{livingExpenseRatio}%</span>
           </label>
@@ -99,7 +102,7 @@ export default function SalaryAllocationSlider({
           <label className="label">
             <span className="label-text flex items-center gap-2">
               <TrendingUp className="w-4 h-4" />
-              투자 비율
+              {t("investmentRatio")}
             </span>
             <span className="label-text-alt font-bold text-blue-500">{investmentRatio}%</span>
           </label>
@@ -120,7 +123,7 @@ export default function SalaryAllocationSlider({
         {/* 저축 비율 표시 */}
         <div className="mt-3 p-3 bg-base-100 rounded-lg border-l-4 border-emerald-500">
           <div className="flex items-center justify-between text-sm">
-            <span className="text-base-content/70">자동 저축 비율</span>
+            <span className="text-base-content/70">{t("autoSavingsRatio")}</span>
             <span className="font-bold text-emerald-500">{savingsRatio}%</span>
           </div>
         </div>
@@ -128,4 +131,3 @@ export default function SalaryAllocationSlider({
     </div>
   );
 }
-

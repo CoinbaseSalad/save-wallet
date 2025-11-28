@@ -1,6 +1,7 @@
 "use client";
 
 import { Flame } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { ROAST_LEVELS } from "@/app/constants/settings";
 
 interface RoastLevelSliderProps {
@@ -9,12 +10,24 @@ interface RoastLevelSliderProps {
 }
 
 export default function RoastLevelSlider({ value, onChange }: RoastLevelSliderProps) {
+  const t = useTranslations("roastLevel");
+
+  // 번역된 라벨과 설명
+  const getLocalizedLevel = (index: number) => {
+    const keys = ["kind", "mild", "medium", "spicy", "hot"];
+    const key = keys[index];
+    return {
+      label: t(key),
+      description: t(`${key}Description`),
+    };
+  };
+
   return (
     <div className="card bg-base-200 shadow-lg">
       <div className="card-body">
         <h2 className="card-title text-lg flex items-center gap-2">
           <Flame className="w-5 h-5 text-accent" />
-          평가 스타일 (Roast 강도)
+          {t("title")}
         </h2>
 
         {/* Roast 강도 Input - 그라데이션 적용 */}
@@ -54,9 +67,9 @@ export default function RoastLevelSlider({ value, onChange }: RoastLevelSliderPr
           </div>
           {/* 라벨 표시 - 약함/강함 표시 */}
           <div className="flex justify-between mt-2 text-[10px]">
-            <span className="text-sky-500 font-medium">약함 (Kind) 🤗</span>
-            <span className="text-amber-500 font-medium">Medium</span>
-            <span className="text-red-500 font-medium">강함 (Hot) 🔥</span>
+            <span className="text-sky-500 font-medium">{t("weakLabel")}</span>
+            <span className="text-amber-500 font-medium">{t("mediumLabel")}</span>
+            <span className="text-red-500 font-medium">{t("strongLabel")}</span>
           </div>
         </div>
 
@@ -69,10 +82,10 @@ export default function RoastLevelSlider({ value, onChange }: RoastLevelSliderPr
             <span className="text-3xl">{ROAST_LEVELS[value].emoji}</span>
             <div>
               <div className="font-bold" style={{ color: ROAST_LEVELS[value].thumbColor }}>
-                {ROAST_LEVELS[value].label} Roast
+                {getLocalizedLevel(value).label} Roast
               </div>
               <p className="text-sm text-base-content/70 mt-1">
-                {ROAST_LEVELS[value].description}
+                {getLocalizedLevel(value).description}
               </p>
             </div>
           </div>
@@ -81,4 +94,3 @@ export default function RoastLevelSlider({ value, onChange }: RoastLevelSliderPr
     </div>
   );
 }
-
