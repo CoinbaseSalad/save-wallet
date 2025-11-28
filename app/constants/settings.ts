@@ -96,3 +96,19 @@ export const DEFAULT_SETTINGS = {
   roastLevel: 2,
 };
 
+// ============================================
+// 데모 모드 설정
+// ============================================
+
+// 환경 변수 ADDRESS_FOR_DEMO에 설정된 지갑 주소가 연결되면 가상 데이터 반환
+// 사용법: .env 또는 .env.local에 ADDRESS_FOR_DEMO=0x지갑주소 설정
+export function isDemoWalletAddress(address: string): boolean {
+  const demoAddress = process.env.ADDRESS_FOR_DEMO;
+
+  if (!demoAddress || !address) {
+    return false;
+  }
+
+  return demoAddress.toLowerCase() === address.toLowerCase();
+}
+

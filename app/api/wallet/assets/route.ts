@@ -8,6 +8,7 @@ import {
   GoPlusTokenSecurity,
   PortfolioCoin,
 } from '@/lib/moralis';
+import { isDemoWalletAddress } from '@/app/constants/settings';
 
 // Node.js Runtime 사용 (Moralis SDK가 Edge Runtime과 호환되지 않음)
 export const runtime = 'nodejs';
@@ -578,9 +579,14 @@ export async function POST(request: NextRequest): Promise<NextResponse<AssetsRes
     const body: AssetsRequest = await request.json();
     const { walletAddress, chainKey } = body;
 
-    // 목업 모드: 실제 API 호출 없이 목업 데이터 반환
-    if (USE_MOCK_DATA) {
-      console.log('[assets] 목업 모드 활성화 - 목업 데이터 반환');
+    // 데모 모드 체크: 특정 지갑 주소 또는 환경 변수로 활성화
+    const isDemoMode = USE_MOCK_DATA || isDemoWalletAddress(walletAddress || '');
+
+    if (isDemoMode) {
+      console.log('[assets] 데모 모드 활성화 - 가상 데이터 반환', {
+        reason: USE_MOCK_DATA ? 'USE_MOCK_DATA=true' : '데모 지갑 주소',
+        walletAddress,
+      });
       // 요청된 지갑 주소로 목업 데이터 업데이트
       const mockResponse = {
         ...MOCK_RESPONSE,
