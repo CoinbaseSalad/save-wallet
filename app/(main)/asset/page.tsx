@@ -65,6 +65,16 @@ const getImportanceText = (importance: Importance) => {
   }
 };
 
+// 숫자를 소수점 2자리까지 포맷팅 (불필요한 0 제거)
+const formatNumber = (num: number | string): string => {
+  const n = typeof num === 'string' ? parseFloat(num) : num;
+  if (isNaN(n)) return '0';
+  // 정수인 경우 그대로 반환
+  if (Number.isInteger(n)) return n.toLocaleString();
+  // 소수점 2자리까지 반올림 후 불필요한 0 제거
+  return parseFloat(n.toFixed(2)).toLocaleString();
+};
+
 // 근거 링크 아이템 컴포넌트
 const SourceItem = ({ source }: { source: RiskSource }) => (
   <a
@@ -262,10 +272,10 @@ export default function AssetPage() {
           <div className="stats bg-base-100 shadow w-full">
             <div className="stat">
               <div className="stat-title">총 자산</div>
-              <div className="stat-value text-primary">${summary.totalValueUsd.toLocaleString()}</div>
+              <div className="stat-value text-primary">${formatNumber(summary.totalValueUsd)}</div>
               <div className={`stat-desc flex items-center gap-1 ${summary.totalChange24h >= 0 ? "text-success" : "text-error"}`}>
                 {summary.totalChange24h >= 0 ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
-                {summary.totalChange24h >= 0 ? "+" : ""}{summary.totalChange24h.toFixed(1)}% (${Math.abs(summary.totalChangeValue).toLocaleString()})
+                {summary.totalChange24h >= 0 ? "+" : ""}{formatNumber(summary.totalChange24h)}% (${formatNumber(Math.abs(summary.totalChangeValue))})
               </div>
             </div>
             <div className="stat">
@@ -313,7 +323,23 @@ export default function AssetPage() {
       <div className="space-y-4">
         <h3 className="text-lg font-semibold px-1">보유 자산</h3>
 
-        {coins.map((coin) => (
+        {/* 보유 자산이 없는 경우 */}
+        {coins.length === 0 ? (
+          <div className="card bg-base-200 shadow-lg">
+            <div className="card-body">
+              <div className="flex flex-col items-center justify-center py-8 text-center">
+                <div className="w-20 h-20 rounded-full bg-base-100 flex items-center justify-center mb-4">
+                  <Wallet className="w-10 h-10 text-base-content/30" />
+                </div>
+                <p className="text-base-content/60 text-sm font-medium">보유 중인 자산이 없습니다</p>
+                <p className="text-base-content/40 text-xs mt-2 max-w-xs">
+                  이 지갑에는 현재 토큰이 없습니다. 토큰을 보유하면 상세한 위험도 분석과 함께 여기에 표시됩니다.
+                </p>
+              </div>
+            </div>
+          </div>
+        ) : (
+          coins.map((coin) => (
           <div key={coin.symbol} className="card bg-base-200 shadow-lg">
             <div className="card-body p-4">
               <div className="flex items-start gap-4">
@@ -351,18 +377,18 @@ export default function AssetPage() {
                       <p className="text-xs text-base-content/60">{coin.name}</p>
                     </div>
                     <div className="text-right">
-                      <div className="font-bold text-lg">${coin.value.toLocaleString()}</div>
+                      <div className="font-bold text-lg">${formatNumber(coin.value)}</div>
                       <div className={`text-xs flex items-center justify-end gap-1 ${coin.change24h >= 0 ? "text-success" : "text-error"}`}>
                         {coin.change24h >= 0 ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
-                        {coin.change24h >= 0 ? "+" : ""}{coin.change24h}%
+                        {coin.change24h >= 0 ? "+" : ""}{formatNumber(coin.change24h)}%
                       </div>
                     </div>
                   </div>
 
                   {/* 보유량 및 가격 */}
                   <div className="flex items-center justify-between mt-2 text-sm text-base-content/70">
-                    <span>보유량: {coin.amount} {coin.symbol}</span>
-                    <span>@${coin.price.toLocaleString()}</span>
+                    <span>보유량: {formatNumber(coin.amount)} {coin.symbol}</span>
+                    <span>@${formatNumber(coin.price)}</span>
                   </div>
 
                   {/* 위험도 이유 표시 (양호가 아닌 경우) */}
@@ -415,52 +441,65 @@ export default function AssetPage() {
               )}
             </div>
           </div>
-        ))}
+          ))
+        )}
       </div>
 
       {/* 전체 포트폴리오 분석 */}
-      {portfolioAnalysis && (
-        <div className="card bg-base-200 shadow-lg">
-          <div className="card-body">
-            <h3 className="card-title text-lg">포트폴리오 분석</h3>
+      <div className="card bg-base-200 shadow-lg">
+        <div className="card-body">
+          <h3 className="card-title text-lg">포트폴리오 분석</h3>
 
-            <div className="alert alert-info">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" className="stroke-current shrink-0 w-6 h-6">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-              </svg>
-              <div>
-                <h4 className="font-bold text-sm">포트폴리오 요약</h4>
-                <ul className="text-xs mt-1 space-y-1">
-                  {portfolioAnalysis.summary.map((item, idx) => (
-                    <li key={idx}>• {item}</li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-
-            {/* 자산 배분 차트 (간단한 bar) */}
-            <div className="mt-4 space-y-2">
-              <div className="text-sm font-semibold mb-2">자산 배분</div>
-              {portfolioAnalysis.allocationChart.map((item) => (
-                <div key={item.symbol} className="flex items-center gap-2">
-                  <span className="w-12 text-xs font-medium">{item.symbol}</span>
-                  <progress
-                    className={`progress flex-1 ${item.riskLevel === "warning"
-                      ? "progress-error"
-                      : item.riskLevel === "caution"
-                        ? "progress-warning"
-                        : "progress-success"
-                      }`}
-                    value={item.percentage}
-                    max="100"
-                  />
-                  <span className="w-12 text-xs text-right">{item.percentage.toFixed(1)}%</span>
+          {portfolioAnalysis && portfolioAnalysis.summary.length > 0 ? (
+            <>
+              <div className="alert alert-info">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" className="stroke-current shrink-0 w-6 h-6">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <div>
+                  <h4 className="font-bold text-sm">포트폴리오 요약</h4>
+                  <ul className="text-xs mt-1 space-y-1">
+                    {portfolioAnalysis.summary.map((item, idx) => (
+                      <li key={idx}>• {item}</li>
+                    ))}
+                  </ul>
                 </div>
-              ))}
+              </div>
+
+              {/* 자산 배분 차트 (간단한 bar) */}
+              {portfolioAnalysis.allocationChart.length > 0 && (
+                <div className="mt-4 space-y-2">
+                  <div className="text-sm font-semibold mb-2">자산 배분</div>
+                  {portfolioAnalysis.allocationChart.map((item) => (
+                    <div key={item.symbol} className="flex items-center gap-2">
+                      <span className="w-12 text-xs font-medium">{item.symbol}</span>
+                      <progress
+                        className={`progress flex-1 ${item.riskLevel === "warning"
+                          ? "progress-error"
+                          : item.riskLevel === "caution"
+                            ? "progress-warning"
+                            : "progress-success"
+                          }`}
+                        value={item.percentage}
+                        max="100"
+                      />
+                      <span className="w-12 text-xs text-right">{item.percentage.toFixed(1)}%</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </>
+          ) : (
+            <div className="flex flex-col items-center justify-center py-6 text-center">
+              <div className="w-14 h-14 rounded-full bg-base-100 flex items-center justify-center mb-3">
+                <AlertCircle className="w-7 h-7 text-base-content/30" />
+              </div>
+              <p className="text-base-content/60 text-sm">분석할 데이터가 부족합니다</p>
+              <p className="text-base-content/40 text-xs mt-1">자산을 보유하면 상세 분석이 제공됩니다</p>
             </div>
-          </div>
+          )}
         </div>
-      )}
+      </div>
     </div>
   );
 }

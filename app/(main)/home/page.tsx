@@ -48,6 +48,16 @@ const getEvaluationText = (evaluation: string) => {
 
 const INITIAL_TRADES_COUNT = 4;
 
+// 숫자를 소수점 2자리까지 포맷팅 (불필요한 0 제거)
+const formatNumber = (num: number | string): string => {
+  const n = typeof num === 'string' ? parseFloat(num) : num;
+  if (isNaN(n)) return '0';
+  // 정수인 경우 그대로 반환
+  if (Number.isInteger(n)) return n.toLocaleString();
+  // 소수점 2자리까지 반올림 후 불필요한 0 제거
+  return parseFloat(n.toFixed(2)).toLocaleString();
+};
+
 // 스켈레톤 로딩 컴포넌트
 const HomePageSkeleton = () => (
   <div className="p-4 space-y-6 max-w-lg mx-auto animate-pulse">
@@ -334,14 +344,25 @@ export default function HomePage() {
       </div>
 
       {/* 거래 내역 평가 영역 */}
-      {recentTrades.length > 0 && (
-        <div className="card bg-base-200 shadow-lg">
-          <div className="card-body">
-            <h2 className="card-title text-lg flex items-center gap-2">
-              <Wallet className="w-5 h-5 text-secondary" />
-              최근 거래 평가
-              <span className="text-xs text-base-content/60 font-normal">(최근 7일)</span>
-            </h2>
+      <div className="card bg-base-200 shadow-lg">
+        <div className="card-body">
+          <h2 className="card-title text-lg flex items-center gap-2">
+            <Wallet className="w-5 h-5 text-secondary" />
+            최근 거래 평가
+            <span className="text-xs text-base-content/60 font-normal">(최근 7일)</span>
+          </h2>
+
+          {/* 거래 내역이 없는 경우 */}
+          {recentTrades.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-8 text-center">
+              <div className="w-16 h-16 rounded-full bg-base-100 flex items-center justify-center mb-4">
+                <Wallet className="w-8 h-8 text-base-content/30" />
+              </div>
+              <p className="text-base-content/60 text-sm">최근 7일간 거래 내역이 없습니다</p>
+              <p className="text-base-content/40 text-xs mt-1">거래가 발생하면 여기에 표시됩니다</p>
+            </div>
+          ) : (
+            <>
 
             {/* 날짜별 거래 횟수 뱃지 - 월/일 2행 분리 */}
             {Object.keys(datesByMonth).length > 0 && (
@@ -410,7 +431,7 @@ export default function HomePage() {
                           </span>
                         </div>
                         <div className="text-xs text-base-content/70">
-                          {trade.amount} {trade.coin} @ ${trade.price.toLocaleString()}
+                          {formatNumber(trade.amount)} {trade.coin} @ ${formatNumber(trade.price)}
                         </div>
                         {trade.comment && (
                           <div className="text-xs mt-1 italic text-base-content/60">
@@ -443,31 +464,42 @@ export default function HomePage() {
                 )}
               </button>
             )}
-          </div>
+            </>
+          )}
         </div>
-      )}
+      </div>
 
       {/* 투자 현황 평가 영역 */}
-      {portfolio && portfolio.coins.length > 0 && (
-        <div className="card bg-base-200 shadow-lg">
-          <div className="card-body">
-            <h2 className="card-title text-lg flex items-center gap-2">
-              <PieChart className="w-5 h-5 text-accent" />
-              포트폴리오 현황
-            </h2>
+      <div className="card bg-base-200 shadow-lg">
+        <div className="card-body">
+          <h2 className="card-title text-lg flex items-center gap-2">
+            <PieChart className="w-5 h-5 text-accent" />
+            포트폴리오 현황
+          </h2>
 
-            {/* 총 자산 */}
-            <div className="stats bg-base-100 shadow">
-              <div className="stat">
-                <div className="stat-title">총 평가금액</div>
-                <div className="stat-value text-primary">${totalValue.toLocaleString()}</div>
-                <div className={`stat-desc flex items-center gap-1 ${totalChange24h >= 0 ? "text-success" : "text-error"}`}>
-                  {totalChange24h >= 0 ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
-                  전일 대비 {totalChange24h >= 0 ? "+" : ""}{totalChange24h.toFixed(1)}%
-                </div>
+          {/* 총 자산 */}
+          <div className="stats bg-base-100 shadow">
+            <div className="stat">
+              <div className="stat-title">총 평가금액</div>
+              <div className="stat-value text-primary">${totalValue.toLocaleString()}</div>
+              <div className={`stat-desc flex items-center gap-1 ${totalChange24h >= 0 ? "text-success" : "text-error"}`}>
+                {totalChange24h >= 0 ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
+                전일 대비 {totalChange24h >= 0 ? "+" : ""}{totalChange24h.toFixed(1)}%
               </div>
             </div>
+          </div>
 
+          {/* 포트폴리오가 비어있는 경우 */}
+          {(!portfolio || portfolio.coins.length === 0) ? (
+            <div className="flex flex-col items-center justify-center py-8 text-center">
+              <div className="w-16 h-16 rounded-full bg-base-100 flex items-center justify-center mb-4">
+                <PieChart className="w-8 h-8 text-base-content/30" />
+              </div>
+              <p className="text-base-content/60 text-sm">보유 중인 자산이 없습니다</p>
+              <p className="text-base-content/40 text-xs mt-1">토큰을 보유하면 여기에 표시됩니다</p>
+            </div>
+          ) : (
+            <>
             {/* 자산 배분 */}
             <div className="space-y-3 mt-4">
               {portfolio.coins.map((asset) => (
@@ -486,14 +518,14 @@ export default function HomePage() {
                       )}
                       <span className="font-bold">{asset.symbol}</span>
                       <span className="text-xs text-base-content/60">
-                        {asset.amount} {asset.symbol}
+                        {formatNumber(asset.amount)} {asset.symbol}
                       </span>
                     </div>
                     <div className="text-right">
-                      <div className="font-semibold">${asset.value.toLocaleString()}</div>
+                      <div className="font-semibold">${formatNumber(asset.value)}</div>
                       <div className={`text-xs flex items-center gap-1 ${asset.change24h >= 0 ? "text-success" : "text-error"}`}>
                         {asset.change24h >= 0 ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
-                        {asset.change24h >= 0 ? "+" : ""}{asset.change24h}%
+                        {asset.change24h >= 0 ? "+" : ""}{formatNumber(asset.change24h)}%
                       </div>
                     </div>
                   </div>
@@ -503,10 +535,14 @@ export default function HomePage() {
                       value={asset.allocation}
                       max="100"
                     />
-                    <span className="text-xs text-base-content/60 w-10 text-right">{asset.allocation}%</span>
+                    <span className="text-xs text-base-content/60 w-10 text-right">{formatNumber(asset.allocation)}%</span>
                   </div>
                 </div>
               ))}
+              {/* 코인 개수 표시 */}
+              <div className="text-right">
+                <span className="text-xs text-base-content/50">총 {portfolio.coins.length}개 코인 보유</span>
+              </div>
             </div>
 
             {/* 투자 성향 */}
@@ -534,9 +570,13 @@ export default function HomePage() {
                   <div className="bg-base-100 p-3 rounded-lg text-center">
                     <div className="text-xs text-base-content/60 mb-1">선호 코인</div>
                     <div className="flex gap-1 justify-center flex-wrap">
-                      {investStyle.preferredCoins.slice(0, 3).map((coin) => (
-                        <span key={coin} className="badge badge-sm badge-outline">{coin}</span>
-                      ))}
+                      {investStyle.preferredCoins && investStyle.preferredCoins.length > 0 ? (
+                        investStyle.preferredCoins.slice(0, 3).map((coin) => (
+                          <span key={coin} className="badge badge-sm badge-outline">{coin}</span>
+                        ))
+                      ) : (
+                        <span className="text-xs text-base-content/40">데이터 없음</span>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -555,9 +595,10 @@ export default function HomePage() {
                 </div>
               </div>
             )}
-          </div>
+            </>
+          )}
         </div>
-      )}
+      </div>
     </div>
   );
 }
