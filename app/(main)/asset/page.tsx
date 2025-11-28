@@ -21,9 +21,9 @@ const getRiskIcon = (riskLevel: RiskLevel) => {
 const getRiskIndicatorColor = (riskLevel: RiskLevel) => {
   switch (riskLevel) {
     case "warning":
-      return "badge-error";
+      return "status-error";
     case "caution":
-      return "badge-warning";
+      return "status-warning";
     default:
       return "";
   }
@@ -41,15 +41,15 @@ const getRiskText = (riskLevel: RiskLevel) => {
   }
 };
 
-// 중요도에 따른 점 색상
+// 중요도에 따른 점 색상 (Theme Colors - 위험도와 구분)
 const getImportanceDotColor = (importance: Importance) => {
   switch (importance) {
     case "high":
-      return "bg-error";
+      return "bg-primary";
     case "medium":
-      return "bg-warning";
+      return "bg-secondary";
     case "low":
-      return "bg-success";
+      return "bg-accent";
   }
 };
 
@@ -322,15 +322,15 @@ export default function AssetPage() {
           <div className="flex items-center gap-4 mt-2 text-xs text-base-content/60">
             <span className="font-medium">중요도:</span>
             <div className="flex items-center gap-1">
-              <div className="w-2 h-2 rounded-full bg-error" />
+              <div className="w-2 h-2 rounded-full bg-primary" />
               <span>상</span>
             </div>
             <div className="flex items-center gap-1">
-              <div className="w-2 h-2 rounded-full bg-warning" />
+              <div className="w-2 h-2 rounded-full bg-secondary" />
               <span>중</span>
             </div>
             <div className="flex items-center gap-1">
-              <div className="w-2 h-2 rounded-full bg-success" />
+              <div className="w-2 h-2 rounded-full bg-accent" />
               <span>하</span>
             </div>
           </div>
@@ -360,11 +360,11 @@ export default function AssetPage() {
           coins.map((coin) => (
             <div key={coin.symbol} className="card bg-base-200 shadow-lg">
               <div className="card-body p-4">
-                <div className="flex items-start gap-4">
+                <div className="flex items-center gap-4">
                   {/* 코인 썸네일 with 위험도 indicator */}
                   <div className="indicator">
                     {coin.riskLevel !== "safe" && (
-                      <span className={`indicator-item indicator-start badge ${getRiskIndicatorColor(coin.riskLevel)} badge-sm`}>
+                      <span className={`indicator-item indicator-start`}>
                         {getRiskIcon(coin.riskLevel)}
                       </span>
                     )}
@@ -408,23 +408,23 @@ export default function AssetPage() {
                       <span>보유량: {formatNumber(coin.amount)} {coin.symbol}</span>
                       <span>@${formatNumber(coin.price)}</span>
                     </div>
-
-                    {/* 위험도 이유 표시 (양호가 아닌 경우) */}
-                    {coin.riskLevel !== "safe" && coin.riskReason && (
-                      <div className={`mt-3 p-2 rounded-lg text-sm ${coin.riskLevel === "warning" ? "bg-error/10" : "bg-warning/10"}`}>
-                        <div className="flex items-start gap-2">
-                          {getRiskIcon(coin.riskLevel)}
-                          <div className="flex-1">
-                            <span className={`font-semibold ${coin.riskLevel === "warning" ? "text-error" : "text-warning"}`}>
-                              {getRiskText(coin.riskLevel)}:
-                            </span>
-                            <span className="ml-1 text-base-content/80">{coin.riskReason}</span>
-                          </div>
-                        </div>
-                      </div>
-                    )}
                   </div>
                 </div>
+
+                {/* 위험도 이유 표시 (양호가 아닌 경우) - 전체 너비 */}
+                {coin.riskLevel !== "safe" && coin.riskReason && (
+                  <div className={`mt-3 p-3 rounded-lg text-sm ${coin.riskLevel === "warning" ? "bg-error/10" : "bg-warning/10"}`}>
+                    <div className="flex items-start gap-2">
+                      {getRiskIcon(coin.riskLevel)}
+                      <div className="flex-1">
+                        <span className={`font-semibold ${coin.riskLevel === "warning" ? "text-error" : "text-warning"}`}>
+                          {getRiskText(coin.riskLevel)}:
+                        </span>
+                        <span className="ml-1 text-base-content/80">{coin.riskReason}</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 {/* 근거 링크 */}
                 {coin.riskSources.length > 0 && (
