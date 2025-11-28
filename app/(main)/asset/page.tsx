@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { TrendingUp, TrendingDown, AlertTriangle, AlertCircle, ExternalLink, Wallet, ChevronDown, RefreshCw } from "lucide-react";
+import { TrendingUp, TrendingDown, AlertTriangle, AlertCircle, ExternalLink, Wallet, ChevronDown, ChevronUp, RefreshCw } from "lucide-react";
 import { useAccount } from "wagmi";
 import type { AssetsResponse, AssetsResponseData, RiskSource, RiskLevel, Importance } from "@/app/api/wallet/types";
 
@@ -131,13 +131,31 @@ const AssetPageSkeleton = () => (
   </div>
 );
 
+const INITIAL_SOURCES_COUNT = 3;
+
 export default function AssetPage() {
   const { address, isConnected } = useAccount();
-  
+
   // API 데이터 상태
   const [data, setData] = useState<AssetsResponseData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // 근거 더보기 상태 (코인 symbol별로 관리)
+  const [expandedSources, setExpandedSources] = useState<Set<string>>(new Set());
+
+  // 근거 더보기 토글 함수
+  const toggleSourceExpand = (symbol: string) => {
+    setExpandedSources(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(symbol)) {
+        newSet.delete(symbol);
+      } else {
+        newSet.add(symbol);
+      }
+      return newSet;
+    });
+  };
 
   // API 호출 함수
   const fetchAssets = useCallback(async () => {
@@ -260,7 +278,7 @@ export default function AssetPage() {
               <Wallet className="w-5 h-5 text-primary" />
               전체 자산 현황
             </h2>
-            <button 
+            <button
               className="btn btn-ghost btn-sm btn-circle"
               onClick={fetchAssets}
               disabled={isLoading}
@@ -340,107 +358,110 @@ export default function AssetPage() {
           </div>
         ) : (
           coins.map((coin) => (
-          <div key={coin.symbol} className="card bg-base-200 shadow-lg">
-            <div className="card-body p-4">
-              <div className="flex items-start gap-4">
-                {/* 코인 썸네일 with 위험도 indicator */}
-                <div className="indicator">
-                  {coin.riskLevel !== "safe" && (
-                    <span className={`indicator-item indicator-start badge ${getRiskIndicatorColor(coin.riskLevel)} badge-sm`}>
-                      {getRiskIcon(coin.riskLevel)}
-                    </span>
-                  )}
-                  <div className="avatar avatar-placeholder">
-                    <div className="bg-white w-14 h-14 rounded-full ring ring-base-300 ring-offset-base-100 ring-offset-2">
-                      {coin.logo ? (
-                        <img
-                          src={coin.logo}
-                          alt={coin.symbol}
-                          className="p-2"
-                          onError={(e) => {
-                            e.currentTarget.style.display = "none";
-                            e.currentTarget.parentElement!.innerHTML = `<span class="text-lg font-bold">${coin.symbol.slice(0, 2)}</span>`;
-                          }}
-                        />
-                      ) : (
-                        <span className="text-lg font-bold">{coin.symbol.slice(0, 2)}</span>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-                {/* 코인 정보 */}
-                <div className="flex-1">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h4 className="font-bold text-lg">{coin.symbol}</h4>
-                      <p className="text-xs text-base-content/60">{coin.name}</p>
-                    </div>
-                    <div className="text-right">
-                      <div className="font-bold text-lg">${formatNumber(coin.value)}</div>
-                      <div className={`text-xs flex items-center justify-end gap-1 ${coin.change24h >= 0 ? "text-success" : "text-error"}`}>
-                        {coin.change24h >= 0 ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
-                        {coin.change24h >= 0 ? "+" : ""}{formatNumber(coin.change24h)}%
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* 보유량 및 가격 */}
-                  <div className="flex items-center justify-between mt-2 text-sm text-base-content/70">
-                    <span>보유량: {formatNumber(coin.amount)} {coin.symbol}</span>
-                    <span>@${formatNumber(coin.price)}</span>
-                  </div>
-
-                  {/* 위험도 이유 표시 (양호가 아닌 경우) */}
-                  {coin.riskLevel !== "safe" && coin.riskReason && (
-                    <div className={`mt-3 p-2 rounded-lg text-sm ${coin.riskLevel === "warning" ? "bg-error/10" : "bg-warning/10"}`}>
-                      <div className="flex items-start gap-2">
+            <div key={coin.symbol} className="card bg-base-200 shadow-lg">
+              <div className="card-body p-4">
+                <div className="flex items-start gap-4">
+                  {/* 코인 썸네일 with 위험도 indicator */}
+                  <div className="indicator">
+                    {coin.riskLevel !== "safe" && (
+                      <span className={`indicator-item indicator-start badge ${getRiskIndicatorColor(coin.riskLevel)} badge-sm`}>
                         {getRiskIcon(coin.riskLevel)}
-                        <div className="flex-1">
-                          <span className={`font-semibold ${coin.riskLevel === "warning" ? "text-error" : "text-warning"}`}>
-                            {getRiskText(coin.riskLevel)}:
-                          </span>
-                          <span className="ml-1 text-base-content/80">{coin.riskReason}</span>
-                        </div>
+                      </span>
+                    )}
+                    <div className="avatar avatar-placeholder">
+                      <div className="bg-white w-14 h-14 rounded-full ring ring-base-300 ring-offset-base-100 ring-offset-2">
+                        {coin.logo ? (
+                          <img
+                            src={coin.logo}
+                            alt={coin.symbol}
+                            className="p-2"
+                            onError={(e) => {
+                              e.currentTarget.style.display = "none";
+                              e.currentTarget.parentElement!.innerHTML = `<span class="text-lg font-bold">${coin.symbol.slice(0, 2)}</span>`;
+                            }}
+                          />
+                        ) : (
+                          <span className="text-lg font-bold">{coin.symbol.slice(0, 2)}</span>
+                        )}
                       </div>
                     </div>
-                  )}
-                </div>
-              </div>
-
-              {/* 근거 링크 - Collapse 형태 */}
-              {coin.riskSources.length > 0 && (
-                <div className="mt-3">
-                  {/* 초기 표시 (최대 3개) */}
-                  <div className="space-y-1.5">
-                    {coin.riskSources.slice(0, 3).map((source, idx) => (
-                      <SourceItem key={idx} source={source} />
-                    ))}
                   </div>
 
-                  {/* 3개 초과 시 Collapse로 나머지 표시 */}
-                  {coin.riskSources.length > 3 && (
-                    <div className="collapse collapse-arrow bg-base-100 mt-2 rounded-lg">
-                      <input type="checkbox" />
-                      <div className="collapse-title text-xs py-2 min-h-0 flex items-center gap-2">
-                        <ChevronDown className="w-3 h-3" />
-                        <span className="text-base-content/60">
-                          {Math.min(coin.riskSources.length - 3, 7)}개 근거 더보기
-                        </span>
+                  {/* 코인 정보 */}
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h4 className="font-bold text-lg">{coin.symbol}</h4>
+                        <p className="text-xs text-base-content/60">{coin.name}</p>
                       </div>
-                      <div className="collapse-content px-2 pb-2">
-                        <div className="space-y-1.5 pt-1">
-                          {coin.riskSources.slice(3, 10).map((source, idx) => (
-                            <SourceItem key={idx + 3} source={source} />
-                          ))}
+                      <div className="text-right">
+                        <div className="font-bold text-lg">${formatNumber(coin.value)}</div>
+                        <div className={`text-xs flex items-center justify-end gap-1 ${coin.change24h >= 0 ? "text-success" : "text-error"}`}>
+                          {coin.change24h >= 0 ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
+                          {coin.change24h >= 0 ? "+" : ""}{formatNumber(coin.change24h)}%
                         </div>
                       </div>
                     </div>
-                  )}
+
+                    {/* 보유량 및 가격 */}
+                    <div className="flex items-center justify-between mt-2 text-sm text-base-content/70">
+                      <span>보유량: {formatNumber(coin.amount)} {coin.symbol}</span>
+                      <span>@${formatNumber(coin.price)}</span>
+                    </div>
+
+                    {/* 위험도 이유 표시 (양호가 아닌 경우) */}
+                    {coin.riskLevel !== "safe" && coin.riskReason && (
+                      <div className={`mt-3 p-2 rounded-lg text-sm ${coin.riskLevel === "warning" ? "bg-error/10" : "bg-warning/10"}`}>
+                        <div className="flex items-start gap-2">
+                          {getRiskIcon(coin.riskLevel)}
+                          <div className="flex-1">
+                            <span className={`font-semibold ${coin.riskLevel === "warning" ? "text-error" : "text-warning"}`}>
+                              {getRiskText(coin.riskLevel)}:
+                            </span>
+                            <span className="ml-1 text-base-content/80">{coin.riskReason}</span>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
-              )}
+
+                {/* 근거 링크 */}
+                {coin.riskSources.length > 0 && (
+                  <div className="mt-3">
+                    {/* 근거 목록 표시 */}
+                    <div className="space-y-1.5">
+                      {(expandedSources.has(coin.symbol)
+                        ? coin.riskSources.slice(0, 10)
+                        : coin.riskSources.slice(0, INITIAL_SOURCES_COUNT)
+                      ).map((source, idx) => (
+                        <SourceItem key={idx} source={source} />
+                      ))}
+                    </div>
+
+                    {/* 확장/축소 버튼 */}
+                    {coin.riskSources.length > INITIAL_SOURCES_COUNT && (
+                      <button
+                        className="btn btn-ghost btn-sm w-full mt-2"
+                        onClick={() => toggleSourceExpand(coin.symbol)}
+                      >
+                        {expandedSources.has(coin.symbol) ? (
+                          <>
+                            <ChevronUp className="w-4 h-4" />
+                            접기
+                          </>
+                        ) : (
+                          <>
+                            <ChevronDown className="w-4 h-4" />
+                            {Math.min(coin.riskSources.length - INITIAL_SOURCES_COUNT, 7)}개 근거 더보기
+                          </>
+                        )}
+                      </button>
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
           ))
         )}
       </div>
