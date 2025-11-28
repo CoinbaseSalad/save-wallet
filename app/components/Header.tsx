@@ -4,6 +4,7 @@ import { LogOut, Wallet } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useAccount, useDisconnect } from "wagmi";
 import LanguageSelector from "./LanguageSelector";
+import ThemeToggle from "./ThemeToggle";
 
 export default function Header() {
   const router = useRouter();
@@ -31,6 +32,7 @@ export default function Header() {
         <span className="text-sm">{formatAddress(address)}</span>
       </div>
       <div className="flex items-center gap-2">
+        <ThemeToggle compact />
         <LanguageSelector compact />
         <LogOut className="w-4 h-4 cursor-pointer" onClick={handleLogout} />
       </div>

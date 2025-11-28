@@ -3,6 +3,35 @@
   themes: light --default, night --prefersdark;
 }
 
+/* 브라우저 강제 다크모드 방지 */
+:root {
+  color-scheme: light dark;
+}
+
+[data-theme="light"] {
+  color-scheme: light;
+}
+
+[data-theme="night"] {
+  color-scheme: dark;
+}
+
+/* Android WebView 강제 다크모드 추가 방지 */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="night"]) {
+    color-scheme: light;
+  }
+}
+
+/* 이미지, 비디오 등이 반전되는 것 방지 */
+img,
+video,
+iframe,
+canvas,
+svg {
+  color-scheme: light dark;
+}
+
 @layer base {
   html,
   body {
