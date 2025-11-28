@@ -20,6 +20,7 @@ const USE_MOCK_DATA = process.env.USE_MOCK_DATA === 'true';
 interface AnalyzeRequest {
   walletAddress: string;
   chainKey: string;
+  locale?: string;
   userSettings: {
     investmentStyle: number;
     livingExpenseRatio: number;
@@ -359,7 +360,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<AnalyzeRe
   try {
     // 요청 본문 파싱
     const body: AnalyzeRequest = await request.json();
-    const { walletAddress, chainKey, userSettings } = body;
+    const { walletAddress, chainKey, locale, userSettings } = body;
 
     // 목업 모드: 실제 API 호출 없이 목업 데이터 반환
     if (USE_MOCK_DATA) {
@@ -431,6 +432,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<AnalyzeRe
       livingExpenseRatio: userSettings?.livingExpenseRatio ?? 50,
       investmentRatio: userSettings?.investmentRatio ?? 30,
       roastLevel: userSettings?.roastLevel ?? 2,
+      locale: locale || 'ko',
     };
 
     // 지갑 분석 수행

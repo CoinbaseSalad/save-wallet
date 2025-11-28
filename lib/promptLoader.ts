@@ -41,6 +41,7 @@ INPUTS
 - SECURITY_ALERTS: {{security_json}}
 - USER_PROFILE: {{user_profile_json}}
 - FEEDBACK_INTENSITY: {{feedback_level}}
+- OUTPUT_LANGUAGE: {{output_language}}
 
 SCORING CRITERIA
 - health_score 0-10: 
@@ -67,6 +68,11 @@ ROAST STYLE GUIDELINES (for level 3-4)
 REQUIREMENTS
 - Output VALID JSON only. No markdown fences, no explanatory text.
 - CRITICAL: Match feedback tone EXACTLY to the FEEDBACK_INTENSITY level.
+- CRITICAL: ALL text content in the JSON output (evaluation, comment, portfolioAdvice, riskWarnings, improvementSuggestions, investmentStyleMatch, tradingFrequency, riskLevel) MUST be written in the OUTPUT_LANGUAGE specified above.
+  * ko = Korean (한국어)
+  * en = English
+  * ja = Japanese (日本語)
+  * zh = Chinese (中文)
 - "evaluation" must be ≤ 200 chars. For levels 3-4, make it punchy and memorable.
 - "tradeEvaluations" should cover up to 10 most significant trades with honest comments.
 - All suggestions must be specific, measurable, and actionable within 7 days.
@@ -452,6 +458,7 @@ export function buildWalletAnalysisPrompt(params: {
   security: object;
   userProfile: object;
   feedbackLevel: number;
+  locale?: string;
 }): string {
   return buildPrompt('wallet_analysis', {
     wallet_address: params.walletAddress,
@@ -461,6 +468,7 @@ export function buildWalletAnalysisPrompt(params: {
     security_json: JSON.stringify(params.security, null, 2),
     user_profile_json: JSON.stringify(params.userProfile, null, 2),
     feedback_level: params.feedbackLevel.toString(),
+    output_language: params.locale || 'ko',
   });
 }
 

@@ -5,6 +5,7 @@ import { TrendingUp, TrendingDown, ArrowUpRight, ArrowDownRight, Wallet, PieChar
 import { useAccount } from "wagmi";
 import { useTranslations } from "next-intl";
 import { useUserSettings } from "@/app/hooks/useUserSettings";
+import { useLocaleSettings } from "@/app/hooks/useLocaleSettings";
 import type { AnalyzeResponse, AnalyzeResponseData } from "@/app/api/wallet/types";
 
 // 점수에 따른 색상 계산 (0-10)
@@ -95,6 +96,7 @@ const HomePageSkeleton = () => (
 export default function HomePage() {
   const { address, isConnected } = useAccount();
   const { settings } = useUserSettings();
+  const { locale } = useLocaleSettings();
   const t = useTranslations("home");
   const tWallet = useTranslations("wallet");
   const tError = useTranslations("error");
@@ -140,6 +142,7 @@ export default function HomePage() {
         body: JSON.stringify({
           walletAddress: address,
           chainKey: 'base',
+          locale: locale,
           userSettings: settings ? {
             investmentStyle: settings.investment_style,
             livingExpenseRatio: settings.living_expense_ratio,
@@ -167,7 +170,7 @@ export default function HomePage() {
     } finally {
       setIsLoading(false);
     }
-  }, [address, settings, tError]);
+  }, [address, settings, locale, tError]);
 
   // 지갑 연결 시 데이터 로드
   useEffect(() => {

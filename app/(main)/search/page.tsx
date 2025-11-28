@@ -4,6 +4,7 @@ import { useState, useRef, useMemo, useCallback } from "react";
 import { Search, Wallet, TrendingUp, TrendingDown, ArrowUpRight, ArrowDownRight, PieChart, Activity, ChevronDown, ChevronUp, RefreshCw } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useUserSettings } from "@/app/hooks/useUserSettings";
+import { useLocaleSettings } from "@/app/hooks/useLocaleSettings";
 import type { AnalyzeResponse, AnalyzeResponseData } from "@/app/api/wallet/types";
 
 // 점수에 따른 색상 계산 (0-10)
@@ -93,6 +94,7 @@ const SearchResultSkeleton = () => (
 
 export default function SearchPage() {
   const { settings } = useUserSettings();
+  const { locale } = useLocaleSettings();
   const t = useTranslations("search");
   const tHome = useTranslations("home");
   const tError = useTranslations("error");
@@ -141,6 +143,7 @@ export default function SearchPage() {
         body: JSON.stringify({
           walletAddress: walletAddress.trim(),
           chainKey: 'base',
+          locale: locale,
           userSettings: settings ? {
             investmentStyle: settings.investment_style,
             livingExpenseRatio: settings.living_expense_ratio,
@@ -168,7 +171,7 @@ export default function SearchPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [walletAddress, settings, t, tError]);
+  }, [walletAddress, settings, locale, t, tError]);
 
   const handleReset = () => {
     setIsSearching(false);

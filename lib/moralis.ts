@@ -803,6 +803,7 @@ export interface UserSettings {
   livingExpenseRatio: number;    // 생활비 비율 (%)
   investmentRatio: number;       // 투자 비율 (%)
   roastLevel: number;            // 0: Kind ~ 4: Hot
+  locale?: string;               // 출력 언어 (ko, en, ja, zh)
 }
 
 /**
@@ -944,6 +945,7 @@ export function buildFlockAIPrompt(input: FlockAIAnalysisInput): string {
     security: securityData,
     userProfile: userProfileData,
     feedbackLevel: userSettings.roastLevel,
+    locale: userSettings.locale || 'ko',
   });
 }
 
