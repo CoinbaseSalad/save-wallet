@@ -36,3 +36,25 @@ export const localeFlags: Record<Locale, string> = {
   ja: '🇯🇵',
 };
 
+// 언어별 통화 설정
+export interface CurrencyConfig {
+  currency: string;
+  symbol: string;
+  locale: string;
+}
+
+export const localeCurrencies: Record<Locale, CurrencyConfig> = {
+  ko: { currency: 'KRW', symbol: '₩', locale: 'ko-KR' },
+  en: { currency: 'USD', symbol: '$', locale: 'en-US' },
+  zh: { currency: 'CNY', symbol: '¥', locale: 'zh-CN' },
+  ja: { currency: 'JPY', symbol: '¥', locale: 'ja-JP' },
+};
+
+// 환율 (USD 기준) - 실제 앱에서는 API로 실시간 환율을 가져와야 합니다
+export const exchangeRates: Record<string, number> = {
+  USD: 1,
+  KRW: 1380,
+  CNY: 7.25,
+  JPY: 155,
+};
+

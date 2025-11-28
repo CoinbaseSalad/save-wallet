@@ -142,6 +142,30 @@
     "fetchFailed": "分析データの取得に失敗しました。",
     "noData": "データがありません",
     "noDataDescription": "ウォレット分析データを取得できません。"
+  },
+  "asset": {
+    "totalAssets": "総資産状況",
+    "totalValue": "総資産",
+    "holdingCoins": "保有コイン",
+    "coins": "銘柄",
+    "warning": "警告",
+    "caution": "注意",
+    "safe": "良好",
+    "importance": "重要度",
+    "importanceHigh": "高",
+    "importanceMedium": "中",
+    "importanceLow": "低",
+    "holdingAssets": "保有資産",
+    "noAssets": "保有資産がありません",
+    "noAssetsDescription": "このウォレットには現在トークンがありません。トークンを保有すると、詳細なリスク分析とともにここに表示されます。",
+    "amount": "保有量",
+    "collapse": "閉じる",
+    "showMoreSources": "{count}件の根拠をもっと見る",
+    "portfolioAnalysis": "ポートフォリオ分析",
+    "portfolioSummary": "ポートフォリオ要約",
+    "assetAllocation": "資産配分",
+    "insufficientData": "分析データが不足しています",
+    "insufficientDataDescription": "資産を保有すると詳細分析が提供されます"
   }
 }
 

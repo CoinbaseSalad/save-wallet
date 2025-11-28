@@ -142,6 +142,30 @@
     "fetchFailed": "获取分析数据失败。",
     "noData": "暂无数据",
     "noDataDescription": "无法获取钱包分析数据。"
+  },
+  "asset": {
+    "totalAssets": "总资产状况",
+    "totalValue": "总资产",
+    "holdingCoins": "持有币种",
+    "coins": "种",
+    "warning": "警告",
+    "caution": "注意",
+    "safe": "良好",
+    "importance": "重要性",
+    "importanceHigh": "高",
+    "importanceMedium": "中",
+    "importanceLow": "低",
+    "holdingAssets": "持有资产",
+    "noAssets": "没有持有资产",
+    "noAssetsDescription": "此钱包目前没有代币。当您持有代币时，将在此显示详细的风险分析。",
+    "amount": "持有量",
+    "collapse": "收起",
+    "showMoreSources": "{count}个更多来源",
+    "portfolioAnalysis": "投资组合分析",
+    "portfolioSummary": "投资组合摘要",
+    "assetAllocation": "资产配置",
+    "insufficientData": "分析数据不足",
+    "insufficientDataDescription": "持有资产后将提供详细分析"
   }
 }
 

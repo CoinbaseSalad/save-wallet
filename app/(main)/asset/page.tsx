@@ -3,7 +3,11 @@
 import { useState, useEffect, useCallback } from "react";
 import { TrendingUp, TrendingDown, AlertTriangle, AlertCircle, ExternalLink, Wallet, ChevronDown, ChevronUp, RefreshCw } from "lucide-react";
 import { useAccount } from "wagmi";
+import { useTranslations } from "next-intl";
+import { useLocaleSettings } from "@/app/hooks/useLocaleSettings";
+import { formatCurrency, formatNumber, formatPercent } from "@/app/utils/currency";
 import type { AssetsResponse, AssetsResponseData, RiskSource, RiskLevel, Importance } from "@/app/api/wallet/types";
+import type { Locale } from "@/i18n/routing";
 
 // 위험도에 따른 아이콘 및 색상
 const getRiskIcon = (riskLevel: RiskLevel) => {
@@ -14,30 +18,6 @@ const getRiskIcon = (riskLevel: RiskLevel) => {
       return <AlertCircle className="w-5 h-5 text-warning" />;
     default:
       return null;
-  }
-};
-
-// 위험도에 따른 indicator 색상
-const getRiskIndicatorColor = (riskLevel: RiskLevel) => {
-  switch (riskLevel) {
-    case "warning":
-      return "status-error";
-    case "caution":
-      return "status-warning";
-    default:
-      return "";
-  }
-};
-
-// 위험도 텍스트
-const getRiskText = (riskLevel: RiskLevel) => {
-  switch (riskLevel) {
-    case "warning":
-      return "경고";
-    case "caution":
-      return "주의";
-    default:
-      return "";
   }
 };
 
@@ -54,29 +34,19 @@ const getImportanceDotColor = (importance: Importance) => {
 };
 
 // 중요도 텍스트
-const getImportanceText = (importance: Importance) => {
+const getImportanceText = (importance: Importance, tAsset: ReturnType<typeof useTranslations>) => {
   switch (importance) {
     case "high":
-      return "상";
+      return tAsset("importanceHigh");
     case "medium":
-      return "중";
+      return tAsset("importanceMedium");
     case "low":
-      return "하";
+      return tAsset("importanceLow");
   }
 };
 
-// 숫자를 소수점 2자리까지 포맷팅 (불필요한 0 제거)
-const formatNumber = (num: number | string): string => {
-  const n = typeof num === 'string' ? parseFloat(num) : num;
-  if (isNaN(n)) return '0';
-  // 정수인 경우 그대로 반환
-  if (Number.isInteger(n)) return n.toLocaleString();
-  // 소수점 2자리까지 반올림 후 불필요한 0 제거
-  return parseFloat(n.toFixed(2)).toLocaleString();
-};
-
 // 근거 링크 아이템 컴포넌트
-const SourceItem = ({ source }: { source: RiskSource }) => (
+const SourceItem = ({ source, tAsset }: { source: RiskSource; tAsset: ReturnType<typeof useTranslations> }) => (
   <a
     href={source.url}
     target="_blank"
@@ -88,7 +58,7 @@ const SourceItem = ({ source }: { source: RiskSource }) => (
       {source.title}
     </span>
     <span className="text-[10px] text-base-content/50 shrink-0">
-      {getImportanceText(source.importance)}
+      {getImportanceText(source.importance, tAsset)}
     </span>
     <ExternalLink className="w-3 h-3 text-base-content/40 shrink-0" />
   </a>
@@ -135,6 +105,11 @@ const INITIAL_SOURCES_COUNT = 3;
 
 export default function AssetPage() {
   const { address, isConnected } = useAccount();
+  const { locale } = useLocaleSettings();
+  const tAsset = useTranslations("asset");
+  const tWallet = useTranslations("wallet");
+  const tError = useTranslations("error");
+  const tCommon = useTranslations("common");
 
   // API 데이터 상태
   const [data, setData] = useState<AssetsResponseData | null>(null);
@@ -184,11 +159,11 @@ export default function AssetPage() {
       if (result.success && result.data) {
         setData(result.data);
       } else {
-        setError(result.error?.message || '자산 데이터를 가져오는데 실패했습니다.');
+        setError(result.error?.message || tError("fetchFailed"));
       }
     } catch (err) {
       console.error('API 호출 오류:', err);
-      setError('서버 연결에 실패했습니다.');
+      setError(tError("serverConnection"));
     } finally {
       setIsLoading(false);
     }
@@ -213,9 +188,9 @@ export default function AssetPage() {
         <div className="card bg-base-200 shadow-lg">
           <div className="card-body text-center">
             <Wallet className="w-16 h-16 mx-auto text-primary mb-4" />
-            <h2 className="card-title justify-center">지갑을 연결해주세요</h2>
+            <h2 className="card-title justify-center">{tWallet("connect")}</h2>
             <p className="text-sm text-base-content/70">
-              자산 현황을 확인하려면 먼저 지갑을 연결해주세요.
+              {tWallet("connectDescription")}
             </p>
           </div>
         </div>
@@ -235,11 +210,11 @@ export default function AssetPage() {
         <div className="card bg-base-200 shadow-lg">
           <div className="card-body text-center">
             <div className="text-error text-4xl mb-4">⚠️</div>
-            <h2 className="card-title justify-center">오류가 발생했습니다</h2>
+            <h2 className="card-title justify-center">{tError("title")}</h2>
             <p className="text-sm text-base-content/70">{error}</p>
             <button className="btn btn-primary mt-4" onClick={fetchAssets}>
               <RefreshCw className="w-4 h-4" />
-              다시 시도
+              {tCommon("retry")}
             </button>
           </div>
         </div>
@@ -254,13 +229,13 @@ export default function AssetPage() {
         <div className="card bg-base-200 shadow-lg">
           <div className="card-body text-center">
             <div className="text-4xl mb-4">📊</div>
-            <h2 className="card-title justify-center">데이터가 없습니다</h2>
+            <h2 className="card-title justify-center">{tError("noData")}</h2>
             <p className="text-sm text-base-content/70">
-              자산 데이터를 가져올 수 없습니다.
+              {tError("noDataDescription")}
             </p>
             <button className="btn btn-primary mt-4" onClick={fetchAssets}>
               <RefreshCw className="w-4 h-4" />
-              다시 시도
+              {tCommon("retry")}
             </button>
           </div>
         </div>
@@ -276,7 +251,7 @@ export default function AssetPage() {
           <div className="flex items-center justify-between">
             <h2 className="card-title text-lg flex items-center gap-2">
               <Wallet className="w-5 h-5 text-primary" />
-              전체 자산 현황
+              {tAsset("totalAssets")}
             </h2>
             <button
               className="btn btn-ghost btn-sm btn-circle"
@@ -289,17 +264,17 @@ export default function AssetPage() {
 
           <div className="stats bg-base-100 shadow w-full">
             <div className="stat">
-              <div className="stat-title">총 자산</div>
-              <div className="stat-value text-primary">${formatNumber(summary.totalValueUsd)}</div>
+              <div className="stat-title">{tAsset("totalValue")}</div>
+              <div className="stat-value text-primary">{formatCurrency(summary.totalValueUsd, locale as Locale)}</div>
               <div className={`stat-desc flex items-center gap-1 ${summary.totalChange24h >= 0 ? "text-success" : "text-error"}`}>
                 {summary.totalChange24h >= 0 ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
-                {summary.totalChange24h >= 0 ? "+" : ""}{formatNumber(summary.totalChange24h)}% (${formatNumber(Math.abs(summary.totalChangeValue))})
+                {formatPercent(summary.totalChange24h, locale as Locale)} ({formatCurrency(Math.abs(summary.totalChangeValue), locale as Locale)})
               </div>
             </div>
             <div className="stat">
-              <div className="stat-title">보유 코인</div>
+              <div className="stat-title">{tAsset("holdingCoins")}</div>
               <div className="stat-value">{summary.totalCoins}</div>
-              <div className="stat-desc">종목</div>
+              <div className="stat-desc">{tAsset("coins")}</div>
             </div>
           </div>
 
@@ -307,31 +282,31 @@ export default function AssetPage() {
           <div className="flex gap-2 mt-2">
             <div className="badge badge-error gap-1">
               <AlertTriangle className="w-3 h-3" />
-              경고 {summary.riskSummary.warning}
+              {tAsset("warning")} {summary.riskSummary.warning}
             </div>
             <div className="badge badge-warning gap-1">
               <AlertCircle className="w-3 h-3" />
-              주의 {summary.riskSummary.caution}
+              {tAsset("caution")} {summary.riskSummary.caution}
             </div>
             <div className="badge badge-success gap-1">
-              양호 {summary.riskSummary.safe}
+              {tAsset("safe")} {summary.riskSummary.safe}
             </div>
           </div>
 
           {/* 중요도 범례 */}
           <div className="flex items-center gap-4 mt-2 text-xs text-base-content/60">
-            <span className="font-medium">중요도:</span>
+            <span className="font-medium">{tAsset("importance")}:</span>
             <div className="flex items-center gap-1">
               <div className="w-2 h-2 rounded-full bg-primary" />
-              <span>상</span>
+              <span>{tAsset("importanceHigh")}</span>
             </div>
             <div className="flex items-center gap-1">
               <div className="w-2 h-2 rounded-full bg-secondary" />
-              <span>중</span>
+              <span>{tAsset("importanceMedium")}</span>
             </div>
             <div className="flex items-center gap-1">
               <div className="w-2 h-2 rounded-full bg-accent" />
-              <span>하</span>
+              <span>{tAsset("importanceLow")}</span>
             </div>
           </div>
         </div>
@@ -339,7 +314,7 @@ export default function AssetPage() {
 
       {/* 코인 별 카드 */}
       <div className="space-y-4">
-        <h3 className="text-lg font-semibold px-1">보유 자산</h3>
+        <h3 className="text-lg font-semibold px-1">{tAsset("holdingAssets")}</h3>
 
         {/* 보유 자산이 없는 경우 */}
         {coins.length === 0 ? (
@@ -349,9 +324,9 @@ export default function AssetPage() {
                 <div className="w-20 h-20 rounded-full bg-base-100 flex items-center justify-center mb-4">
                   <Wallet className="w-10 h-10 text-base-content/30" />
                 </div>
-                <p className="text-base-content/60 text-sm font-medium">보유 중인 자산이 없습니다</p>
+                <p className="text-base-content/60 text-sm font-medium">{tAsset("noAssets")}</p>
                 <p className="text-base-content/40 text-xs mt-2 max-w-xs">
-                  이 지갑에는 현재 토큰이 없습니다. 토큰을 보유하면 상세한 위험도 분석과 함께 여기에 표시됩니다.
+                  {tAsset("noAssetsDescription")}
                 </p>
               </div>
             </div>
@@ -395,18 +370,18 @@ export default function AssetPage() {
                         <p className="text-xs text-base-content/60">{coin.name}</p>
                       </div>
                       <div className="text-right">
-                        <div className="font-bold text-lg">${formatNumber(coin.value)}</div>
+                        <div className="font-bold text-lg">{formatCurrency(coin.value, locale as Locale)}</div>
                         <div className={`text-xs flex items-center justify-end gap-1 ${coin.change24h >= 0 ? "text-success" : "text-error"}`}>
                           {coin.change24h >= 0 ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
-                          {coin.change24h >= 0 ? "+" : ""}{formatNumber(coin.change24h)}%
+                          {formatPercent(coin.change24h, locale as Locale)}
                         </div>
                       </div>
                     </div>
 
                     {/* 보유량 및 가격 */}
                     <div className="flex items-center justify-between mt-2 text-sm text-base-content/70">
-                      <span>보유량: {formatNumber(coin.amount)} {coin.symbol}</span>
-                      <span>@${formatNumber(coin.price)}</span>
+                      <span>{tAsset("amount")}: {formatNumber(coin.amount, locale as Locale)} {coin.symbol}</span>
+                      <span>@{formatCurrency(coin.price, locale as Locale)}</span>
                     </div>
                   </div>
                 </div>
@@ -418,7 +393,7 @@ export default function AssetPage() {
                       {getRiskIcon(coin.riskLevel)}
                       <div className="flex-1">
                         <span className={`font-semibold ${coin.riskLevel === "warning" ? "text-error" : "text-warning"}`}>
-                          {getRiskText(coin.riskLevel)}:
+                          {coin.riskLevel === "warning" ? tAsset("warning") : tAsset("caution")}:
                         </span>
                         <span className="ml-1 text-base-content/80">{coin.riskReason}</span>
                       </div>
@@ -435,7 +410,7 @@ export default function AssetPage() {
                         ? coin.riskSources.slice(0, 10)
                         : coin.riskSources.slice(0, INITIAL_SOURCES_COUNT)
                       ).map((source, idx) => (
-                        <SourceItem key={idx} source={source} />
+                        <SourceItem key={idx} source={source} tAsset={tAsset} />
                       ))}
                     </div>
 
@@ -448,12 +423,12 @@ export default function AssetPage() {
                         {expandedSources.has(coin.symbol) ? (
                           <>
                             <ChevronUp className="w-4 h-4" />
-                            접기
+                            {tAsset("collapse")}
                           </>
                         ) : (
                           <>
                             <ChevronDown className="w-4 h-4" />
-                            {Math.min(coin.riskSources.length - INITIAL_SOURCES_COUNT, 7)}개 근거 더보기
+                            {tAsset("showMoreSources", { count: Math.min(coin.riskSources.length - INITIAL_SOURCES_COUNT, 7) })}
                           </>
                         )}
                       </button>
@@ -469,7 +444,7 @@ export default function AssetPage() {
       {/* 전체 포트폴리오 분석 */}
       <div className="card bg-base-200 shadow-lg">
         <div className="card-body">
-          <h3 className="card-title text-lg">포트폴리오 분석</h3>
+          <h3 className="card-title text-lg">{tAsset("portfolioAnalysis")}</h3>
 
           {portfolioAnalysis && portfolioAnalysis.summary.length > 0 ? (
             <>
@@ -478,7 +453,7 @@ export default function AssetPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                 </svg>
                 <div>
-                  <h4 className="font-bold text-sm">포트폴리오 요약</h4>
+                  <h4 className="font-bold text-sm">{tAsset("portfolioSummary")}</h4>
                   <ul className="text-xs mt-1 space-y-1">
                     {portfolioAnalysis.summary.map((item, idx) => (
                       <li key={idx}>• {item}</li>
@@ -490,7 +465,7 @@ export default function AssetPage() {
               {/* 자산 배분 차트 (간단한 bar) */}
               {portfolioAnalysis.allocationChart.length > 0 && (
                 <div className="mt-4 space-y-2">
-                  <div className="text-sm font-semibold mb-2">자산 배분</div>
+                  <div className="text-sm font-semibold mb-2">{tAsset("assetAllocation")}</div>
                   {portfolioAnalysis.allocationChart.map((item) => (
                     <div key={item.symbol} className="flex items-center gap-2">
                       <span className="w-12 text-xs font-medium">{item.symbol}</span>
@@ -504,7 +479,7 @@ export default function AssetPage() {
                         value={item.percentage}
                         max="100"
                       />
-                      <span className="w-12 text-xs text-right">{item.percentage.toFixed(1)}%</span>
+                      <span className="w-12 text-xs text-right">{formatPercent(item.percentage, locale as Locale, false)}</span>
                     </div>
                   ))}
                 </div>
@@ -515,8 +490,8 @@ export default function AssetPage() {
               <div className="w-14 h-14 rounded-full bg-base-100 flex items-center justify-center mb-3">
                 <AlertCircle className="w-7 h-7 text-base-content/30" />
               </div>
-              <p className="text-base-content/60 text-sm">분석할 데이터가 부족합니다</p>
-              <p className="text-base-content/40 text-xs mt-1">자산을 보유하면 상세 분석이 제공됩니다</p>
+              <p className="text-base-content/60 text-sm">{tAsset("insufficientData")}</p>
+              <p className="text-base-content/40 text-xs mt-1">{tAsset("insufficientDataDescription")}</p>
             </div>
           )}
         </div>

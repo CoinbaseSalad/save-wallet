@@ -5,7 +5,9 @@ import { Search, Wallet, TrendingUp, TrendingDown, ArrowUpRight, ArrowDownRight,
 import { useTranslations } from "next-intl";
 import { useUserSettings } from "@/app/hooks/useUserSettings";
 import { useLocaleSettings } from "@/app/hooks/useLocaleSettings";
+import { formatCurrency, formatNumber, formatPercent } from "@/app/utils/currency";
 import type { AnalyzeResponse, AnalyzeResponseData } from "@/app/api/wallet/types";
+import type { Locale } from "@/i18n/routing";
 
 // 점수에 따른 색상 계산 (0-10)
 const getScoreColor = (score: number) => {
@@ -37,16 +39,6 @@ const getEvaluationBadge = (evaluation: string) => {
 
 const INITIAL_TRADES_COUNT = 4;
 const INITIAL_COINS_COUNT = 5;
-
-// 숫자를 소수점 2자리까지 포맷팅 (불필요한 0 제거)
-const formatNumber = (num: number | string): string => {
-  const n = typeof num === 'string' ? parseFloat(num) : num;
-  if (isNaN(n)) return '0';
-  // 정수인 경우 그대로 반환
-  if (Number.isInteger(n)) return n.toLocaleString();
-  // 소수점 2자리까지 반올림 후 불필요한 0 제거
-  return parseFloat(n.toFixed(2)).toLocaleString();
-};
 
 // 스켈레톤 로딩 컴포넌트
 const SearchResultSkeleton = () => (
@@ -454,7 +446,7 @@ export default function SearchPage() {
                                       </span>
                                     </div>
                                     <div className="text-xs text-base-content/70">
-                                      {formatNumber(trade.amount)} {trade.coin} @ ${formatNumber(trade.price)}
+                                      {formatNumber(trade.amount, locale as Locale)} {trade.coin} @ {formatCurrency(trade.price, locale as Locale)}
                                     </div>
                                     {trade.comment && (
                                       <div className="text-xs mt-1 italic text-base-content/60">
@@ -504,10 +496,10 @@ export default function SearchPage() {
                     <div className="stats bg-base-100 shadow">
                       <div className="stat">
                         <div className="stat-title">{tHome("totalValue")}</div>
-                        <div className="stat-value text-primary">${totalValue.toLocaleString()}</div>
+                        <div className="stat-value text-primary">{formatCurrency(totalValue, locale as Locale)}</div>
                         <div className={`stat-desc flex items-center gap-1 ${totalChange24h >= 0 ? "text-success" : "text-error"}`}>
                           {totalChange24h >= 0 ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
-                          {tHome("dayChange")} {totalChange24h >= 0 ? "+" : ""}{totalChange24h.toFixed(1)}%
+                          {tHome("dayChange")} {formatPercent(totalChange24h, locale as Locale)}
                         </div>
                       </div>
                     </div>
@@ -541,11 +533,11 @@ export default function SearchPage() {
                                   )}
                                   <span className="font-bold">{asset.symbol}</span>
                                   <span className="text-xs text-base-content/60">
-                                    {formatNumber(asset.amount)} {asset.symbol}
+                                    {formatNumber(asset.amount, locale as Locale)} {asset.symbol}
                                   </span>
                                 </div>
                                 <div className="text-right">
-                                  <div className="font-semibold">${formatNumber(asset.value)}</div>
+                                  <div className="font-semibold">{formatCurrency(asset.value, locale as Locale)}</div>
                                   <div
                                     className={`text-xs flex items-center gap-1 ${asset.change24h >= 0 ? "text-success" : "text-error"
                                       }`}
@@ -555,8 +547,7 @@ export default function SearchPage() {
                                     ) : (
                                       <TrendingDown className="w-3 h-3" />
                                     )}
-                                    {asset.change24h >= 0 ? "+" : ""}
-                                    {formatNumber(asset.change24h)}%
+                                    {formatPercent(asset.change24h, locale as Locale)}
                                   </div>
                                 </div>
                               </div>
@@ -571,7 +562,7 @@ export default function SearchPage() {
                                   value={asset.allocation}
                                   max="100"
                                 />
-                                <span className="text-xs text-base-content/60 w-10 text-right">{formatNumber(asset.allocation)}%</span>
+                                <span className="text-xs text-base-content/60 w-10 text-right">{formatPercent(asset.allocation, locale as Locale, false)}</span>
                               </div>
                             </div>
                           ))}

@@ -142,6 +142,30 @@
     "fetchFailed": "분석 데이터를 가져오는데 실패했습니다.",
     "noData": "데이터가 없습니다",
     "noDataDescription": "지갑 분석 데이터를 가져올 수 없습니다."
+  },
+  "asset": {
+    "totalAssets": "전체 자산 현황",
+    "totalValue": "총 자산",
+    "holdingCoins": "보유 코인",
+    "coins": "종목",
+    "warning": "경고",
+    "caution": "주의",
+    "safe": "양호",
+    "importance": "중요도",
+    "importanceHigh": "상",
+    "importanceMedium": "중",
+    "importanceLow": "하",
+    "holdingAssets": "보유 자산",
+    "noAssets": "보유 중인 자산이 없습니다",
+    "noAssetsDescription": "이 지갑에는 현재 토큰이 없습니다. 토큰을 보유하면 상세한 위험도 분석과 함께 여기에 표시됩니다.",
+    "amount": "보유량",
+    "collapse": "접기",
+    "showMoreSources": "{count}개 근거 더보기",
+    "portfolioAnalysis": "포트폴리오 분석",
+    "portfolioSummary": "포트폴리오 요약",
+    "assetAllocation": "자산 배분",
+    "insufficientData": "분석할 데이터가 부족합니다",
+    "insufficientDataDescription": "자산을 보유하면 상세 분석이 제공됩니다"
   }
 }
 

@@ -142,6 +142,30 @@
     "fetchFailed": "Failed to fetch analysis data.",
     "noData": "No data",
     "noDataDescription": "Unable to fetch wallet analysis data."
+  },
+  "asset": {
+    "totalAssets": "Total Assets",
+    "totalValue": "Total Value",
+    "holdingCoins": "Holdings",
+    "coins": "coins",
+    "warning": "Warning",
+    "caution": "Caution",
+    "safe": "Safe",
+    "importance": "Importance",
+    "importanceHigh": "High",
+    "importanceMedium": "Medium",
+    "importanceLow": "Low",
+    "holdingAssets": "Holdings",
+    "noAssets": "No assets held",
+    "noAssetsDescription": "This wallet has no tokens. When you hold tokens, detailed risk analysis will be displayed here.",
+    "amount": "Amount",
+    "collapse": "Collapse",
+    "showMoreSources": "{count} more sources",
+    "portfolioAnalysis": "Portfolio Analysis",
+    "portfolioSummary": "Portfolio Summary",
+    "assetAllocation": "Asset Allocation",
+    "insufficientData": "Insufficient data for analysis",
+    "insufficientDataDescription": "Detailed analysis will be provided when you hold assets"
   }
 }
 
