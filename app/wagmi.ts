@@ -1,14 +1,17 @@
-import { getDefaultConfig } from "@rainbow-me/rainbowkit";
+import { http, createConfig } from "wagmi";
 import { base } from "wagmi/chains";
-import { http } from "wagmi";
+import { coinbaseWallet } from "wagmi/connectors";
 
-export const config = getDefaultConfig({
-  appName: "Coinbase Salad",
-  projectId: process.env.NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID || "demo",
+export const config = createConfig({
   chains: [base],
   transports: {
     [base.id]: http(),
   },
+  connectors: [
+    coinbaseWallet({
+      appName: "SaveWallet",
+      preference: "smartWalletOnly",
+    }),
+  ],
   ssr: true,
 });
-
