@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useMemo } from "react";
+import { useState, useRef, useMemo, useEffect } from "react";
 import { Search, Wallet, TrendingUp, TrendingDown, ArrowUpRight, ArrowDownRight, PieChart, Activity, ChevronDown, ChevronUp, RefreshCw, Globe } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useUserSettings } from "@/app/hooks/useUserSettings";
@@ -159,6 +159,31 @@ export default function SearchPage() {
     setSearchedChain(selectedChain);
     searchWallet(searchParams);
   };
+
+  // 언어 변경 시 검색 결과가 있으면 다시 분석
+  useEffect(() => {
+    if (searchedAddress && searchedChain) {
+      searchWallet({
+        walletAddress: searchedAddress,
+        chainKey: searchedChain,
+        locale: locale,
+        userSettings: settings
+          ? {
+            investmentStyle: settings.investment_style,
+            livingExpenseRatio: settings.living_expense_ratio,
+            investmentRatio: settings.investment_ratio,
+            roastLevel: settings.roast_level,
+          }
+          : {
+            investmentStyle: 2,
+            livingExpenseRatio: 50,
+            investmentRatio: 30,
+            roastLevel: 2,
+          },
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [locale]);
 
   const handleReset = () => {
     setSearchedAddress(null);
