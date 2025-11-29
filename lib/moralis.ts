@@ -422,16 +422,37 @@ export async function getWalletPortfolio(
     getWalletTokenBalances(address, chainKey),
   ]);
 
-  // 총 가치 계산
-  const erc20TotalValue = tokenBalances.reduce((sum, t) => sum + (t.valueUsd || 0), 0);
+  // 네이티브 토큰 심볼 (중복 체크용)
+  const nativeSymbol = nativeBalance.symbol.toUpperCase();
+
+  // ERC20 토큰에서 네이티브 토큰과 중복되는 항목 필터링
+  // - 같은 심볼의 토큰 (예: ETH가 ERC20으로도 존재하는 경우)
+  // - Wrapped 버전은 별도 토큰이므로 유지 (WETH, WMATIC 등)
+  const filteredTokenBalances = tokenBalances.filter((token) => {
+    const tokenSymbol = token.symbol.toUpperCase();
+    // 네이티브 토큰과 동일한 심볼이면서 컨트랙트 주소가 없거나 특수 주소인 경우 제외
+    // (일부 API에서 네이티브 토큰을 ERC20처럼 반환하는 경우가 있음)
+    if (tokenSymbol === nativeSymbol) {
+      // 컨트랙트 주소가 없거나 0xEeee... 특수 주소인 경우 네이티브 토큰 중복
+      if (!token.contractAddress || 
+          token.contractAddress.toLowerCase().startsWith('0xeeee')) {
+        console.log(`[Portfolio] 중복 네이티브 토큰 제외: ${token.symbol}`);
+        return false;
+      }
+    }
+    return true;
+  });
+
+  // 총 가치 계산 (필터링된 ERC20 토큰 기준)
+  const erc20TotalValue = filteredTokenBalances.reduce((sum, t) => sum + (t.valueUsd || 0), 0);
   const totalValueUsd = erc20TotalValue + (nativeBalance.valueUsd || 0);
 
-  // 포트폴리오 코인 목록 생성
-  const portfolioCoins: PortfolioCoin[] = [];
+  // 포트폴리오 코인 목록 생성 (중복 방지를 위한 Map 사용)
+  const portfolioCoinsMap = new Map<string, PortfolioCoin>();
 
   // 네이티브 토큰 추가
   if (nativeBalance.valueUsd && nativeBalance.valueUsd > 0) {
-    portfolioCoins.push({
+    portfolioCoinsMap.set(nativeSymbol, {
       symbol: nativeBalance.symbol,
       name: nativeBalance.name,
       amount: nativeBalance.balanceFormatted,
@@ -444,11 +465,24 @@ export async function getWalletPortfolio(
     });
   }
 
-  // ERC20 토큰 추가
-  tokenBalances
+  // ERC20 토큰 추가 (중복 체크)
+  filteredTokenBalances
     .filter((t) => (t.valueUsd || 0) > 0)
     .forEach((token) => {
-      portfolioCoins.push({
+      const tokenSymbol = token.symbol.toUpperCase();
+      
+      // 이미 동일 심볼의 토큰이 있는 경우 처리
+      if (portfolioCoinsMap.has(tokenSymbol)) {
+        const existing = portfolioCoinsMap.get(tokenSymbol)!;
+        // 기존 토큰과 합산 (같은 심볼의 다른 컨트랙트인 경우)
+        console.log(`[Portfolio] 동일 심볼 토큰 발견: ${tokenSymbol}, 기존 값: ${existing.value}, 신규 값: ${token.valueUsd}`);
+        existing.value += token.valueUsd || 0;
+        existing.amount = String(parseFloat(existing.amount) + parseFloat(token.amount));
+        existing.allocation = totalValueUsd > 0 ? (existing.value / totalValueUsd) * 100 : 0;
+        return;
+      }
+
+      portfolioCoinsMap.set(tokenSymbol, {
         symbol: token.symbol,
         name: token.name,
         amount: token.amount,
@@ -461,12 +495,13 @@ export async function getWalletPortfolio(
       });
     });
 
-  // 가치 기준 정렬
-  portfolioCoins.sort((a, b) => b.value - a.value);
+  // Map을 배열로 변환하고 가치 기준 정렬
+  const portfolioCoins = Array.from(portfolioCoinsMap.values())
+    .sort((a, b) => b.value - a.value);
 
   return {
     nativeBalance,
-    tokenBalances,
+    tokenBalances: filteredTokenBalances,
     portfolioCoins,
     totalValueUsd,
   };
