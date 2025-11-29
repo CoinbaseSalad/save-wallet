@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useMemo } from "react";
-import { Search, Wallet, TrendingUp, TrendingDown, ArrowUpRight, ArrowDownRight, PieChart, Activity, ChevronDown, ChevronUp, RefreshCw } from "lucide-react";
+import { Search, Wallet, TrendingUp, TrendingDown, ArrowUpRight, ArrowDownRight, PieChart, Activity, ChevronDown, ChevronUp, RefreshCw, Globe } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useUserSettings } from "@/app/hooks/useUserSettings";
 import { useLocaleSettings } from "@/app/hooks/useLocaleSettings";
@@ -99,6 +99,8 @@ export default function SearchPage() {
   // 검색 상태
   const [walletAddress, setWalletAddress] = useState("");
   const [searchedAddress, setSearchedAddress] = useState<string | null>(null);
+  const [selectedChain, setSelectedChain] = useState("base");
+  const [searchedChain, setSearchedChain] = useState("base");
 
   // React Query Mutation 사용
   const {
@@ -109,8 +111,8 @@ export default function SearchPage() {
     reset,
   } = useWalletSearchMutation();
 
-  // 캐시된 결과 확인
-  const cachedResult = useCachedWalletAnalysis(searchedAddress, "base");
+  // 캐시된 결과 확인 - 검색된 체인 사용
+  const cachedResult = useCachedWalletAnalysis(searchedAddress, searchedChain);
 
   // UI 상태
   const [isTradesExpanded, setIsTradesExpanded] = useState(false);
@@ -129,10 +131,10 @@ export default function SearchPage() {
     }
   };
 
-  // 검색 파라미터
+  // 검색 파라미터 - 선택된 체인 사용
   const searchParams = useMemo(() => ({
     walletAddress: walletAddress.trim(),
-    chainKey: "base",
+    chainKey: selectedChain,
     locale: locale,
     userSettings: settings
       ? {
@@ -147,19 +149,22 @@ export default function SearchPage() {
         investmentRatio: 30,
         roastLevel: 2,
       },
-  }), [walletAddress, settings, locale]);
+  }), [walletAddress, settings, locale, selectedChain]);
 
   // 검색 API 호출
   const handleSearch = () => {
     if (!walletAddress.trim()) return;
 
     setSearchedAddress(walletAddress.trim());
+    setSearchedChain(selectedChain);
     searchWallet(searchParams);
   };
 
   const handleReset = () => {
     setSearchedAddress(null);
     setWalletAddress("");
+    setSelectedChain("base");
+    setSearchedChain("base");
     setIsTradesExpanded(false);
     setIsCoinsExpanded(false);
     reset();
@@ -237,8 +242,28 @@ export default function SearchPage() {
             {t("description")}
           </p>
 
-          {/* 입력 영역 */}
+          {/* 체인 선택 영역 */}
           <div className="form-control mt-4">
+            <label className="label">
+              <span className="label-text flex items-center gap-1.5">
+                <Globe className="w-4 h-4" />
+                {t("selectChain")}
+              </span>
+            </label>
+            <select
+              className="select select-bordered w-full"
+              value={selectedChain}
+              onChange={(e) => setSelectedChain(e.target.value)}
+            >
+              <option value="base">{t("chainBase")}</option>
+              <option value="ethereum">{t("chainEthereum")}</option>
+              <option value="polygon">{t("chainPolygon")}</option>
+              <option value="arbitrum">{t("chainArbitrum")}</option>
+            </select>
+          </div>
+
+          {/* 지갑 주소 입력 영역 */}
+          <div className="form-control mt-3">
             <label className="label">
               <span className="label-text">{t("walletAddress")}</span>
             </label>
@@ -269,12 +294,15 @@ export default function SearchPage() {
       {/* 검색 결과 영역 */}
       {isSearching && (
         <div className="animate-fade-in">
-          {/* 검색된 지갑 주소 표시 */}
+          {/* 검색된 지갑 주소 및 체인 표시 */}
           <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               <Wallet className="w-5 h-5 text-primary" />
               <span className="font-mono text-sm bg-base-200 px-3 py-1 rounded-lg">
                 {searchedAddress && searchedAddress.length > 20 ? `${searchedAddress.slice(0, 10)}...${searchedAddress.slice(-8)}` : searchedAddress}
+              </span>
+              <span className="badge badge-primary badge-sm">
+                {searchedChain.charAt(0).toUpperCase() + searchedChain.slice(1)}
               </span>
             </div>
             <button className="btn btn-ghost btn-sm" onClick={handleReset}>

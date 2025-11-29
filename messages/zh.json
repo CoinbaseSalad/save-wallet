@@ -140,7 +140,12 @@
     "placeholder": "输入 0x... 或 ENS 地址",
     "searchButton": "搜索",
     "searchOther": "搜索其他钱包",
-    "searchFailed": "钱包分析失败。"
+    "searchFailed": "钱包分析失败。",
+    "selectChain": "选择链",
+    "chainEthereum": "以太坊",
+    "chainBase": "Base",
+    "chainPolygon": "Polygon",
+    "chainArbitrum": "Arbitrum"
   },
   "error": {
     "title": "发生错误",

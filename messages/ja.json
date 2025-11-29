@@ -140,7 +140,12 @@
     "placeholder": "0x... または ENS アドレスを入力",
     "searchButton": "検索",
     "searchOther": "別のウォレットを検索",
-    "searchFailed": "ウォレット分析に失敗しました。"
+    "searchFailed": "ウォレット分析に失敗しました。",
+    "selectChain": "チェーン選択",
+    "chainEthereum": "Ethereum",
+    "chainBase": "Base",
+    "chainPolygon": "Polygon",
+    "chainArbitrum": "Arbitrum"
   },
   "error": {
     "title": "エラーが発生しました",

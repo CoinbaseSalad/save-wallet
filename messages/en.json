@@ -140,7 +140,12 @@
     "placeholder": "Enter 0x... or ENS address",
     "searchButton": "Search",
     "searchOther": "Search Another Wallet",
-    "searchFailed": "Failed to analyze wallet."
+    "searchFailed": "Failed to analyze wallet.",
+    "selectChain": "Select Chain",
+    "chainEthereum": "Ethereum",
+    "chainBase": "Base",
+    "chainPolygon": "Polygon",
+    "chainArbitrum": "Arbitrum"
   },
   "error": {
     "title": "An error occurred",

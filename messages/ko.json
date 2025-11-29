@@ -140,7 +140,12 @@
     "placeholder": "0x... 또는 ENS 주소 입력",
     "searchButton": "검색하기",
     "searchOther": "다른 지갑 검색",
-    "searchFailed": "지갑 분석에 실패했습니다."
+    "searchFailed": "지갑 분석에 실패했습니다.",
+    "selectChain": "체인 선택",
+    "chainEthereum": "Ethereum",
+    "chainBase": "Base",
+    "chainPolygon": "Polygon",
+    "chainArbitrum": "Arbitrum"
   },
   "error": {
     "title": "오류가 발생했습니다",
