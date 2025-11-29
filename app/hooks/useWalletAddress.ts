@@ -38,11 +38,21 @@ export function useWalletAddress() {
     fetchMiniKitAddress();
   }, [isBaseApp]);
 
+  // ✅ 핵심 수정: wagmi 연결이 끊기면 miniKitAddress도 초기화
+  useEffect(() => {
+    if (!isWagmiConnected && miniKitAddress) {
+      setMiniKitAddress(null);
+    }
+  }, [isWagmiConnected, miniKitAddress]);
+
   // Base 앱에서는 MiniKit 주소 우선, 아니면 wagmi 주소 사용
   const address = isBaseApp ? (miniKitAddress || wagmiAddress) : wagmiAddress;
 
-  // 연결 상태
-  const isConnected = isBaseApp ? !!miniKitAddress : isWagmiConnected;
+  // ✅ 핵심 수정: Base App에서도 wagmi 연결 상태를 함께 고려
+  // miniKitAddress가 있더라도 wagmi가 disconnect되면 연결 해제로 간주
+  const isConnected = isBaseApp
+    ? (!!miniKitAddress && isWagmiConnected)
+    : isWagmiConnected;
 
   // 로딩 상태: MiniKit 초기화 중이거나 Wagmi가 연결 시도 중일 때
   const isLoading = isMiniKitLoading || status === "connecting" || status === "reconnecting";
