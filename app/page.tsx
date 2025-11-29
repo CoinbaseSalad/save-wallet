@@ -54,6 +54,15 @@ export default function Home() {
     }
   }, [isConnected, isLoading, hasCompletedOnboarding, router]);
 
+  // 초기 로딩 상태 처리 추가
+  if (isLoading) {
+    return (
+      <div className="flex flex-col min-h-screen items-center justify-center bg-base-100">
+        <span className="loading loading-spinner loading-lg text-primary"></span>
+      </div>
+    );
+  }
+
   const handleLogout = () => {
     disconnect();
   };
@@ -64,7 +73,7 @@ export default function Home() {
         <div className="flex justify-end py-4 px-4">
           <div className="badge badge-outline badge-md flex text-center items-center gap-2">
             <WalletIcon className="w-4 h-4 text-green-500" />
-            {formatAddress(address)}
+            {isLoading ? "Not Connected" : formatAddress(address)}
             <LogOut className="w-4 h-4 cursor-pointer" onClick={handleLogout} />
           </div>
         </div>
@@ -78,7 +87,7 @@ export default function Home() {
             {isBaseApp && (
               <div className="badge badge-outline badge-md flex text-center items-center gap-2">
                 <WalletIcon className="w-4 h-4 text-green-500" />
-                {!isConnected ? "Not Connected" : formatAddress(address)}
+                {isLoading ? "Not Connected" : formatAddress(address)}
               </div>
             )}
             <p className="text-base-content/70 text-sm leading-relaxed">
@@ -90,7 +99,12 @@ export default function Home() {
               <span className="badge badge-outline badge-sm">🎯 맞춤 조언</span>
             </div>
             <div className="card-actions flex justify-center mt-4 w-full">
-              {isBaseApp && !isConnected ? (
+              {/* 
+                  Base App 환경 로직:
+                  1. 연결됨 -> "Save My Wallet" 버튼 (다음 페이지 이동)
+                  2. 연결 안됨 -> Wallet 컴포넌트 (연결 시도)
+               */}
+              {isBaseApp && isConnected ? (
                 <button
                   type="button"
                   onClick={() => {
@@ -101,11 +115,11 @@ export default function Home() {
                     }
                   }}
                   className="btn btn-primary"
-                  disabled={!isConnected || isLoading}
                 >
-                  {isConnected ? "Save My Wallet" : "Connect Wallet"}
+                  Save My Wallet
                 </button>
               ) : (
+                // Base App에서 연결이 안 되었거나, 일반 브라우저인 경우
                 <Wallet>
                   <ConnectWallet className="bg-blue-800">
                     <Avatar className="h-6 w-6" />
