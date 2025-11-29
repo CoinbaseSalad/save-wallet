@@ -78,7 +78,7 @@ export default function Home() {
             {isBaseApp && (
               <div className="badge badge-outline badge-md flex text-center items-center gap-2">
                 <WalletIcon className="w-4 h-4 text-green-500" />
-                {formatAddress(address)}
+                {!isConnected ? "Not Connected" : formatAddress(address)}
               </div>
             )}
             <p className="text-base-content/70 text-sm leading-relaxed">
@@ -90,7 +90,7 @@ export default function Home() {
               <span className="badge badge-outline badge-sm">🎯 맞춤 조언</span>
             </div>
             <div className="card-actions flex justify-center mt-4 w-full">
-              {isBaseApp ? (
+              {isBaseApp && !isConnected ? (
                 <button
                   type="button"
                   onClick={() => {
@@ -103,7 +103,7 @@ export default function Home() {
                   className="btn btn-primary"
                   disabled={!isConnected || isLoading}
                 >
-                  {isConnected ? "Wallet Connected" : "Connect Wallet"}
+                  {isConnected ? "Save My Wallet" : "Connect Wallet"}
                 </button>
               ) : (
                 <Wallet>
