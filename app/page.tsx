@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { useMiniKit } from "@coinbase/onchainkit/minikit";
 import { useRouter } from "next/navigation";
 import { useDisconnect } from "wagmi";
@@ -24,7 +24,6 @@ import {
 export default function Home() {
   const { isFrameReady, setFrameReady } = useMiniKit();
   const { address, isBaseApp, isConnected, isLoading } = useWalletAddress();
-  const [error, setError] = useState("");
   const router = useRouter();
   const { disconnect } = useDisconnect();
 
@@ -130,7 +129,6 @@ export default function Home() {
                 </Wallet>
               )}
             </div>
-            {error && <p className="text-error text-sm">{error}</p>}
             {!isBaseApp && (
               <p className="text-sm text-base-content/50 mt-2">
                 일반 브라우저에서 접속 중입니다
